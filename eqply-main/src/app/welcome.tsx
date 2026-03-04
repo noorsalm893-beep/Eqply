@@ -38,7 +38,7 @@ export default function WelcomeScreen() {
             styles.button,
             pressed && styles.buttonPressed,
           ]}
-          onPress={() => router.replace("/(tabs)")}
+          onPress={() => router.replace("/(tabs)/register")}
         >
           <Text style={styles.buttonText}>Let's get started</Text>
         </Pressable>
