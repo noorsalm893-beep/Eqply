@@ -12,6 +12,7 @@ import {
     View,
 } from "react-native";
 import { colors } from "../../constants/colors";
+import { useAuth } from "../../context/AuthContext";
 
 const AVATARS = [
     require("../../../assets/images/ava1.jpeg"),
@@ -21,6 +22,7 @@ const AVATARS = [
 ];
 
 export default function RegisterScreen() {
+    const { signIn } = useAuth();
     const [selectedAvatar, setSelectedAvatar] = useState<number | null>(null);
 
     return (
@@ -98,7 +100,7 @@ export default function RegisterScreen() {
                 <Pressable
                     style={({ pressed }) => [styles.nextButton, pressed && styles.nextButtonPressed]}
                 >
-                    <Text style={styles.nextButtonText}>Next</Text>
+                    <Text onPress={signIn} style={styles.nextButtonText}>Next</Text>
                 </Pressable>
 
                 <Link href={"/login" as Href} asChild>

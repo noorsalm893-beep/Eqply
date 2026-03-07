@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { useAuth } from "../context/AuthContext";
 
 const CIRCLE_SIZE = 420;
 const CIRCLE_OFFSET = 140;
@@ -13,6 +14,7 @@ const COLORS = {
 };
 
 export default function Index() {
+  const { signOut } = useAuth();
   const router = useRouter();
   const hasNavigated = useRef(false);
 

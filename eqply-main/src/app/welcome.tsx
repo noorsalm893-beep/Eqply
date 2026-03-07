@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 const COLORS = {
   background: "#FDF8F8",
@@ -40,7 +41,7 @@ export default function WelcomeScreen() {
           ]}
           onPress={() => router.replace("/(tabs)/register")}
         >
-          <Text style={styles.buttonText}>Let's get started</Text>
+          <Text onPress={() => router.push("/login")} style={styles.buttonText}>Let's get started</Text>
         </Pressable>
       </View>
     </SafeAreaView>

@@ -9,8 +9,10 @@ import {
   View,
 } from "react-native";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
+  const { signIn } = useAuth();
   return (
     <View style={styles.screen}>
       <ScrollView
@@ -56,7 +58,7 @@ export default function LoginScreen() {
         </Pressable>
 
         <Link href="/" asChild>
-          <Pressable style={styles.cancelLink}>
+          <Pressable onPress={signIn} style={styles.cancelLink}>
             <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
         </Link>
