@@ -1,4 +1,3 @@
-import { Link, useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import {
   NativeSyntheticEvent,
@@ -11,12 +10,14 @@ import {
   TextInputKeyPressEventData,
   View,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/colors";
+import React from "react";
 
 const CODE_LENGTH = 4;
 
 export default function ForgotPasswordScreen() {
-  const router = useRouter();
+  const navigation = useNavigation();
   const [code, setCode] = useState("");
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
@@ -75,16 +76,17 @@ export default function ForgotPasswordScreen() {
 
         <Pressable
           style={({ pressed }) => [styles.nextButton, pressed && styles.nextButtonPressed]}
-          onPress={() => router.replace("/set-new-password")}
+          onPress={() => navigation.navigate("SetNewPassword" as never)}
         >
           <Text style={styles.nextButtonText}>Next</Text>
         </Pressable>
 
-        <Link href="/login" asChild>
-          <Pressable style={styles.cancelLink}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
-        </Link>
+        <Pressable
+          style={styles.cancelLink}
+          onPress={() => navigation.navigate("Login" as never)}
+        >
+          <Text style={styles.cancelText}>Cancel</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );

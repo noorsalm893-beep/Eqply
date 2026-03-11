@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Image,
@@ -11,10 +10,12 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/colors";
+import React from "react";
 
 export default function SetNewPasswordScreen() {
-  const router = useRouter();
+  const navigation = useNavigation();
   const [password, setPassword] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -24,7 +25,7 @@ export default function SetNewPasswordScreen() {
 
   const closeModalAndGoToLogin = () => {
     setShowSuccessModal(false);
-    router.replace("/login");
+    navigation.navigate("Login" as never);
   };
 
   return (
@@ -43,7 +44,7 @@ export default function SetNewPasswordScreen() {
 
         <View style={styles.avatarWrap}>
           <Image
-            source={require("../../assets/images/ava1.jpeg")}
+            source={require("../assets/ava1.jpeg")}
             style={styles.avatarImage}
             resizeMode="cover"
           />

@@ -1,7 +1,6 @@
-import { useRouter } from "expo-router";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+import React from "react";
 
 const COLORS = {
   background: "#FDF8F8",
@@ -12,13 +11,13 @@ const COLORS = {
 };
 
 export default function WelcomeScreen() {
-  const router = useRouter();
+  const navigation = useNavigation();
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+    <View style={styles.container}>
       <View style={styles.logoSection}>
         <Image
-          source={require("../../assets/images/eqply-logo.png")}
+          source={require("../assets/eqply-logo.png")}
           style={styles.logoImage}
           resizeMode="contain"
         />
@@ -39,12 +38,12 @@ export default function WelcomeScreen() {
             styles.button,
             pressed && styles.buttonPressed,
           ]}
-          onPress={() => router.replace("/(tabs)/register")}
+          onPress={() => navigation.navigate("Login" as never)}
         >
-          <Text onPress={() => router.push("/login")} style={styles.buttonText}>Let's get started</Text>
+          <Text style={styles.buttonText}>Let's get started</Text>
         </Pressable>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

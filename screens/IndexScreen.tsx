@@ -1,7 +1,7 @@
-import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useAuth } from "../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import React from "react";
 
 const CIRCLE_SIZE = 420;
 const CIRCLE_OFFSET = 140;
@@ -13,20 +13,19 @@ const COLORS = {
   teal: "#0fc1df",
 };
 
-export default function Index() {
-  const { signOut } = useAuth();
-  const router = useRouter();
+export default function IndexScreen() {
+  const navigation = useNavigation();
   const hasNavigated = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!hasNavigated.current) {
         hasNavigated.current = true;
-        router.replace("/welcome");
+        navigation.navigate("Welcome" as never);
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, [router]);
+  }, []);
 
   return (
     <View style={styles.container}>
