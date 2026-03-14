@@ -1,7 +1,6 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import React from "react";
 
 const CIRCLE_SIZE = 420;
 const CIRCLE_OFFSET = 140;
@@ -21,11 +20,11 @@ export default function IndexScreen() {
     const timer = setTimeout(() => {
       if (!hasNavigated.current) {
         hasNavigated.current = true;
-        navigation.navigate("Welcome" as never);
+        navigation.navigate("Welcome");
       }
     }, 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>

@@ -1,27 +1,30 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
-  NativeSyntheticEvent,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TextInputKeyPressEventData,
   View,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/colors";
-import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 const CODE_LENGTH = 4;
 
 export default function ForgotPasswordScreen() {
   const navigation = useNavigation();
+  const { requestPasswordReset, verifyResetCode } = useAuth();
+  const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState("");
+  const inputRefs = useRef([]);
 
-  const handleChange = (index: number, text: string) => {
+  const handleChange = (index, text) => {
     const digit = text.replace(/\D/g, "").slice(-1);
     const newCode = (code.slice(0, index) + digit + code.slice(index + 1)).slice(0, CODE_LENGTH);
     setCode(newCode);
@@ -30,10 +33,45 @@ export default function ForgotPasswordScreen() {
     }
   };
 
-  const handleKeyPress = (index: number, e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+  const handleKeyPress = (index, e) => {
     if (e.nativeEvent.key === "Backspace" && !code[index] && index > 0) {
       setTimeout(() => inputRefs.current[index - 1]?.focus(), 10);
     }
+  };
+
+  const handleSendAgain = async () => {
+    if (!email.trim()) {
+      setError("Enter your email first.");
+      return;
+    }
+    setError("");
+    setIsSending(true);
+    const result = await requestPasswordReset(email.trim());
+    if (!result.ok) {
+      setError(result.error || "Failed to send code.");
+    }
+    setIsSending(false);
+  };
+
+  const handleNext = async () => {
+    if (!email.trim()) {
+      setError("Enter your email to continue.");
+      return;
+    }
+    if (code.length < CODE_LENGTH) {
+      setError("Enter the 4-digit code.");
+      return;
+    }
+    setError("");
+    setIsSubmitting(true);
+    const result = await verifyResetCode({ email: email.trim(), code });
+    if (!result.ok) {
+      setError(result.error || "Invalid code.");
+      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(false);
+    navigation.navigate("SetNewPassword", { email: email.trim(), code });
   };
 
   return (
@@ -52,11 +90,25 @@ export default function ForgotPasswordScreen() {
 
         <Text style={styles.title}>Password Recovery</Text>
 
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#9ca3af"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={email}
+          onChangeText={setEmail}
+          editable={!isSubmitting && !isSending}
+        />
+
         <View style={styles.codeRow}>
           {[0, 1, 2, 3].map((index) => (
             <TextInput
               key={index}
-              ref={(el) => { inputRefs.current[index] = el; }}
+              ref={(el) => {
+                inputRefs.current[index] = el;
+              }}
               style={styles.codeInput}
               value={code[index] ?? ""}
               onChangeText={(text) => handleChange(index, text)}
@@ -68,23 +120,29 @@ export default function ForgotPasswordScreen() {
           ))}
         </View>
 
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
         <Text style={styles.hint}>Check your email for the code</Text>
 
-        <Pressable style={styles.sendAgainWrap}>
-          <Text style={styles.sendAgainText}>Send Again</Text>
+        <Pressable style={styles.sendAgainWrap} onPress={handleSendAgain} disabled={isSending}>
+          <Text style={styles.sendAgainText}>
+            {isSending ? "Sending..." : "Send Again"}
+          </Text>
         </Pressable>
 
         <Pressable
-          style={({ pressed }) => [styles.nextButton, pressed && styles.nextButtonPressed]}
-          onPress={() => navigation.navigate("SetNewPassword" as never)}
+          style={({ pressed }) => [
+            styles.nextButton,
+            pressed && styles.nextButtonPressed,
+            isSubmitting && styles.buttonDisabled,
+          ]}
+          onPress={handleNext}
+          disabled={isSubmitting}
         >
-          <Text style={styles.nextButtonText}>Next</Text>
+          <Text style={styles.nextButtonText}>{isSubmitting ? "Verifying..." : "Next"}</Text>
         </Pressable>
 
-        <Pressable
-          style={styles.cancelLink}
-          onPress={() => navigation.navigate("Login" as never)}
-        >
+        <Pressable style={styles.cancelLink} onPress={() => navigation.navigate("Login")}>
           <Text style={styles.cancelText}>Cancel</Text>
         </Pressable>
       </ScrollView>
@@ -150,7 +208,27 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "700",
     color: colors.deepPurple,
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: colors.inputBg,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: "#111",
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   codeRow: {
     flexDirection: "row",
@@ -178,6 +256,12 @@ const styles = StyleSheet.create({
         elevation: 2,
       },
     }),
+  },
+  errorText: {
+    color: "#b91c1c",
+    fontSize: 14,
+    marginBottom: 8,
+    textAlign: "center",
   },
   hint: {
     fontSize: 15,
@@ -215,6 +299,9 @@ const styles = StyleSheet.create({
   },
   nextButtonPressed: {
     opacity: 0.9,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   nextButtonText: {
     color: "#fff",

@@ -1,6 +1,6 @@
+import React from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import React from "react";
 
 const COLORS = {
   background: "#FDF8F8",
@@ -34,11 +34,8 @@ export default function WelcomeScreen() {
 
       <View style={styles.buttonWrap}>
         <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={() => navigation.navigate("Login" as never)}
+          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+          onPress={() => navigation.navigate("Login")}
         >
           <Text style={styles.buttonText}>Let's get started</Text>
         </Pressable>

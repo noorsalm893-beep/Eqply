@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Image,
   Modal,
@@ -10,22 +10,49 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { colors } from "../constants/colors";
-import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function SetNewPasswordScreen() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { setNewPassword } = useAuth();
+  const { email = "", code = "" } = route.params || {};
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!email || !code) {
+      setError("Missing email or code. Please restart the reset flow.");
+      return;
+    }
+    if (!password) {
+      setError("Enter your new password.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+    setError("");
+    setIsSubmitting(true);
+    const result = await setNewPassword({ email, code, password });
+    if (!result.ok) {
+      setError(result.error || "Failed to reset password.");
+      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(false);
     setShowSuccessModal(true);
   };
 
   const closeModalAndGoToLogin = () => {
     setShowSuccessModal(false);
-    navigation.navigate("Login" as never);
+    navigation.navigate("Login");
   };
 
   return (
@@ -50,8 +77,8 @@ export default function SetNewPasswordScreen() {
           />
         </View>
 
-        <Text style={styles.greeting}>Hello, Basmala</Text>
-        <Text style={styles.label}>Type new password</Text>
+        <Text style={styles.greeting}>Set new password</Text>
+        <Text style={styles.label}>Type and confirm your new password</Text>
 
         <TextInput
           style={styles.input}
@@ -62,12 +89,28 @@ export default function SetNewPasswordScreen() {
           secureTextEntry
           autoCapitalize="none"
         />
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm password"
+          placeholderTextColor="#9ca3af"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <Pressable
-          style={({ pressed }) => [styles.nextButton, pressed && styles.nextButtonPressed]}
+          style={({ pressed }) => [
+            styles.nextButton,
+            pressed && styles.nextButtonPressed,
+            isSubmitting && styles.buttonDisabled,
+          ]}
           onPress={handleSave}
+          disabled={isSubmitting}
         >
-          <Text style={styles.nextButtonText}>Next</Text>
+          <Text style={styles.nextButtonText}>{isSubmitting ? "Saving..." : "Next"}</Text>
         </Pressable>
       </ScrollView>
 
@@ -164,14 +207,14 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   greeting: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
     color: colors.deepPurple,
     textAlign: "center",
     marginBottom: 8,
   },
   label: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#6b7280",
     textAlign: "center",
     marginBottom: 16,
@@ -183,7 +226,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: "#111",
-    marginBottom: 28,
+    marginBottom: 12,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -196,11 +239,18 @@ const styles = StyleSheet.create({
       },
     }),
   },
+  errorText: {
+    color: "#b91c1c",
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: "center",
+  },
   nextButton: {
     backgroundColor: colors.primaryPink,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
+    marginBottom: 20,
     ...Platform.select({
       ios: {
         shadowColor: colors.primaryPink,
@@ -216,6 +266,9 @@ const styles = StyleSheet.create({
   nextButtonPressed: {
     opacity: 0.9,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   nextButtonText: {
     color: "#fff",
     fontSize: 17,
@@ -223,7 +276,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -234,32 +287,31 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 320,
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "700",
     color: colors.deepPurple,
-    textAlign: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   modalMessage: {
-    fontSize: 16,
-    color: "#374151",
+    fontSize: 14,
+    color: "#6b7280",
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 16,
   },
   modalButton: {
     backgroundColor: colors.primaryPink,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
   },
   modalButtonPressed: {
-    opacity: 0.9,
+    opacity: 0.85,
   },
   modalButtonText: {
     color: "#fff",
-    fontSize: 16,
     fontWeight: "600",
   },
 });
