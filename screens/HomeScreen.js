@@ -1,5 +1,4 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
 import {
   Alert,
   Image,
@@ -9,6 +8,7 @@ import {
   Text,
   TextInput,
   View,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
@@ -19,25 +19,25 @@ const bestDeals = [
     id: 1,
     title: "automatic level",
     price: "705EGP",
-    image: require("../assets/automatic level.jpg"),
+    image: require("../assets/Automatic-Level.jpg"),
   },
   {
     id: 2,
     title: "digital multimeter",
     price: "499EGP",
-    image: require("../assets/digital multimeter.jpg"),
+    image: require("../assets/Digital-Multimeter.jpg"),
   },
   {
     id: 3,
     title: "film scanner",
     price: "90EGP",
-    image: require("../assets/film scanner .jpg"),
+    image: require("../assets/Film-Scanner.jpg"),
   },
   {
     id: 4,
     title: "grinder",
     price: "600EGP",
-    image: require("../assets/grinder.jpg"),
+    image: require("../assets/Grinder.jpg"),
   },
 ];
 
@@ -46,25 +46,25 @@ const exploreEquipment = [
     id: 5,
     title: "makita drill",
     price: "380EGP",
-    image: require("../assets/makita drill.jpg"),
+    image: require("../assets/Makita-drill.jpg"),
   },
   {
     id: 6,
     title: "spray gun",
     price: "800EGP",
-    image: require("../assets/spray gun .jpg"),
+    image: require("../assets/Spray-Gun.jpg"),
   },
   {
     id: 7,
     title: "total station",
     price: "620EGP",
-    image: require("../assets/total station.jpg"),
+    image: require("../assets/total-station.jpg"),
   },
   {
     id: 8,
     title: "soldering iron",
     price: "200EGP",
-    image: require("../assets/soldering iron.jpg"),
+    image: require("../assets/Soldering-Iron.jpg"),
   },
 ];
 

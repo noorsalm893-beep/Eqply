@@ -32,7 +32,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("student");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,9 +43,7 @@ export default function RegisterScreen() {
       name: name.trim(),
       email: email.trim(),
       password,
-      phone: phone.trim(),
       role,
-      avatarIndex: selectedAvatar,
     });
     if (!result.ok) {
       setError(result.error || "Registration failed.");
@@ -75,23 +73,23 @@ export default function RegisterScreen() {
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.sectionTitle}>Choose Account Type</Text>
 
-     <View style={styles.roleContainer}>
-       <Pressable
-         style={[
-         styles.roleButton,
-         role === "user" && styles.roleButtonSelected,
-        ]}
-       onPress={() => setRole("user")}
-      >
-     <Text
+        <View style={styles.roleContainer}>
+  <Pressable
+    style={[
+      styles.roleButton,
+      role === "student" && styles.roleButtonSelected,
+    ]}
+    onPress={() => setRole("student")}
+  >
+    <Text
       style={[
         styles.roleButtonText,
-        role === "user" && styles.roleButtonTextSelected,
+        role === "student" && styles.roleButtonTextSelected,
       ]}
-       >
-       User
-       </Text>
-        </Pressable>
+    >
+      Student
+    </Text>
+  </Pressable>
 
   <Pressable
     style={[
@@ -107,6 +105,23 @@ export default function RegisterScreen() {
       ]}
     >
       Vendor
+    </Text>
+  </Pressable>
+
+  <Pressable
+    style={[
+      styles.roleButton,
+      role === "freelancer" && styles.roleButtonSelected,
+    ]}
+    onPress={() => setRole("freelancer")}
+  >
+    <Text
+      style={[
+        styles.roleButtonText,
+        role === "freelancer" && styles.roleButtonTextSelected,
+      ]}
+    >
+      Freelancer
     </Text>
   </Pressable>
 </View>
@@ -272,7 +287,7 @@ const styles = StyleSheet.create({
   
   roleContainer: {
     flexDirection: "row",
-    gap: 12,
+    justifyContent: "space-between",
     marginBottom: 18,
   },
   
