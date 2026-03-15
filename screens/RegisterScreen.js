@@ -9,6 +9,9 @@ import {
   Text,
   TextInput,
   View,
+  TouchableWithoutFeedback,
+  Keyboard,
+  KeyboardAvoidingView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/colors";
@@ -29,6 +32,7 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [role, setRole] = useState("user");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -40,6 +44,7 @@ export default function RegisterScreen() {
       email: email.trim(),
       password,
       phone: phone.trim(),
+      role,
       avatarIndex: selectedAvatar,
     });
     if (!result.ok) {
@@ -50,6 +55,11 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.screen}>
+      <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+  >
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -63,6 +73,46 @@ export default function RegisterScreen() {
         </View>
 
         <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.sectionTitle}>Choose Account Type</Text>
+
+     <View style={styles.roleContainer}>
+       <Pressable
+         style={[
+         styles.roleButton,
+         role === "user" && styles.roleButtonSelected,
+        ]}
+       onPress={() => setRole("user")}
+      >
+     <Text
+      style={[
+        styles.roleButtonText,
+        role === "user" && styles.roleButtonTextSelected,
+      ]}
+       >
+       User
+       </Text>
+        </Pressable>
+
+  <Pressable
+    style={[
+      styles.roleButton,
+      role === "vendor" && styles.roleButtonSelected,
+    ]}
+    onPress={() => setRole("vendor")}
+  >
+    <Text
+      style={[
+        styles.roleButtonText,
+        role === "vendor" && styles.roleButtonTextSelected,
+      ]}
+    >
+      Vendor
+    </Text>
+  </Pressable>
+</View>
+
+<Text style={styles.sectionTitle}>Choose Avatar</Text>
+
 
         <View style={styles.avatarRow}>
           {AVATARS.map((src, index) => (
@@ -147,6 +197,8 @@ export default function RegisterScreen() {
           <Text style={styles.accountLinkText}>I have an account</Text>
         </Pressable>
       </ScrollView>
+      </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
     </View>
   );
 }
@@ -211,6 +263,44 @@ const styles = StyleSheet.create({
     color: colors.deepPurple,
     marginBottom: 16,
   },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.deepPurple,
+    marginBottom: 10,
+  },
+  
+  roleContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 18,
+  },
+  
+  roleButton: {
+    flex: 1,
+    backgroundColor: colors.inputBg,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  
+  roleButtonSelected: {
+    borderColor: colors.primaryPink,
+    backgroundColor: "#fff",
+  },
+  
+  roleButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.deepPurple,
+  },
+  
+  roleButtonTextSelected: {
+    color: colors.primaryPink,
+  },
+  
   avatarRow: {
     flexDirection: "row",
     justifyContent: "center",

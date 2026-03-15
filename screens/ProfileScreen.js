@@ -1,81 +1,312 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
 
-export default function ProfileScreen() {
+const publishedAds = [
+  {
+    id: 1,
+    title: "lens",
+    price: "200EGP",
+    image: require("../assets/lens1.jpeg"),
+  },
+  {
+    id: 2,
+    title: "light",
+    price: "300EGP",
+    image: require("../assets/light1.jpeg"),
+  },
+  {
+    id: 3,
+    title: "microphone",
+    price: "600EGP",
+    image: require("../assets/mic1.jpeg"),
+  },
+];
+
+export default function ProfileScreen({ navigation }) {
   const { user, signOut } = useAuth();
 
+  const displayName =
+    user?.name || user?.fullName || user?.username || "mariam";
+  const displayEmail = user?.email || "mariammohmed467@gmail.com";
+  const displayPhone = user?.phone || "01092201539";
+  const displayRole = user?.role || "User";
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.header}>
+        <View style={styles.profileRow}>
+          <Image
+            source={require("../assets/ava4.jpeg")}
+            style={styles.avatar}
+          />
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>{user?.name || user?.fullName || user?.username || "—"}</Text>
-
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user?.email || "—"}</Text>
-
-        <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>{user?.phone || "—"}</Text>
+          <View style={styles.greetingBox}>
+            <Text style={styles.helloText}>Hello,</Text>
+            <Text style={styles.nameText}>{displayName}</Text>
+          </View>
+        </View>
       </View>
 
-      <Pressable style={({ pressed }) => [styles.logoutButton, pressed && styles.logoutPressed]} onPress={signOut}>
-        <Text style={styles.logoutText}>Log out</Text>
+      <View style={styles.infoSection}>
+        <Text style={styles.infoText}>Email: {displayEmail}</Text>
+        <Text style={styles.infoText}>Phone number: {displayPhone}</Text>
+
+        <View style={styles.profileTypeRow}>
+          <Text style={styles.profileTypeLabel}>Profile type:</Text>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleBadgeText}>{displayRole}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.menuSection}>
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuText}>My orders</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+        </Pressable>
+
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuText}>Favourites</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+        </Pressable>
+
+        <Pressable style={styles.menuItem}>
+          <Text style={styles.menuText}>Published ads</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+        </Pressable>
+      </View>
+
+      <View style={styles.adsSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.adsRow}
+        >
+          {publishedAds.map((item) => (
+            <View key={item.id} style={styles.adCard}>
+              <Pressable style={styles.heartIcon}>
+                <Ionicons name="heart-outline" size={18} color="#ff4fa3" />
+              </Pressable>
+
+              <Image source={item.image} style={styles.adImage} />
+
+              <Text style={styles.adTitle}>{item.title}</Text>
+              <Text style={styles.adPrice}>{item.price}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+
+      <Pressable style={styles.supportWrapper}>
+        <Text style={styles.supportText}>Support</Text>
       </Pressable>
-    </View>
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.editButton,
+          pressed && styles.buttonPressed,
+        ]}
+        onPress={() => navigation?.navigate?.("EditProfile")}
+      >
+        <Text style={styles.editText}>Edit</Text>
+      </Pressable>
+
+      <Pressable
+        style={({ pressed }) => [
+          styles.logoutButton,
+          pressed && styles.buttonPressed,
+        ]}
+        onPress={signOut}
+      >
+        <Text style={styles.logoutText}>Logout</Text>
+      </Pressable>
+
+      
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: colors.background,
-    padding: 24,
+    backgroundColor: "#f7eff2",
   },
-  title: {
-    fontSize: 28,
+  contentContainer: {
+    paddingBottom: 40,
+  },
+  header: {
+    height: 190,
+    backgroundColor: "#d9c6e6",
+    justifyContent: "flex-start",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    borderWidth: 3,
+    borderColor: "#fff",
+    backgroundColor: "#fff",
+  },
+  greetingBox: {
+    marginLeft: 14,
+  },
+  helloText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: colors.deepPurple,
+  },
+  nameText: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: colors.deepPurple,
+  },
+  infoSection: {
+    paddingHorizontal: 20,
+    paddingTop: 22,
+  },
+  infoText: {
+    fontSize: 17,
     fontWeight: "700",
     color: colors.deepPurple,
     marginBottom: 20,
   },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+  profileTypeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 18,
   },
-  label: {
-    fontSize: 13,
-    color: "#6b7280",
-    marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+  profileTypeLabel: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.deepPurple,
+    marginRight: 14,
   },
-  value: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111",
-    marginBottom: 16,
+  roleBadge: {
+    backgroundColor: "#d9c6e6",
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  roleBadgeText: {
+    color: colors.deepPurple,
+    fontSize: 15,
+    fontWeight: "500",
+  },
+  menuSection: {
+    paddingHorizontal: 20,
+    marginTop: 6,
+  },
+  menuItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  menuText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.deepPurple,
+  },
+  adsSection: {
+    marginTop: 6,
+    paddingLeft: 20,
+  },
+  adsRow: {
+    paddingRight: 20,
+  },
+  adCard: {
+    width: 130,
+    backgroundColor: "#f3eded",
+    borderRadius: 10,
+    marginRight: 16,
+    padding: 10,
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "#e4d7dc",
+  },
+  heartIcon: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 2,
+  },
+  adImage: {
+    width: "100%",
+    height: 120,
+    resizeMode: "contain",
+    marginTop: 15,
+    marginBottom: 12,
+  },
+  adTitle: {
+    fontSize: 15,
+    color: colors.deepPurple,
+    marginBottom: 8,
+  },
+  adPrice: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: colors.deepPurple,
+  },
+  supportWrapper: {
+    alignItems: "center",
+    marginTop: 34,
+    marginBottom: 20,
+  },
+  supportText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.deepPurple,
+    textDecorationLine: "underline",
   },
   logoutButton: {
-    backgroundColor: colors.primaryPink,
-    borderRadius: 12,
-    paddingVertical: 14,
+    alignSelf: "center",
+    width: 100,
+    backgroundColor: "#5a00b5",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  editButton: {
+    alignSelf: "center",
+    width: 100,
+    backgroundColor: "#5a00b5",
+    borderRadius: 10,
+    paddingVertical: 12,
     alignItems: "center",
   },
-  logoutPressed: {
+  buttonPressed: {
     opacity: 0.85,
   },
   logoutText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  editText: {
+    color: "#fff",
+    fontSize: 17,
     fontWeight: "700",
   },
 });
