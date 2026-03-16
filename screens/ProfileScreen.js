@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
+import { LinearGradient } from "expo-linear-gradient";
 
 const publishedAds = [
   {
@@ -42,11 +43,14 @@ export default function ProfileScreen({ navigation }) {
   const displayRole = user?.role || "User";
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
+    <LinearGradient
+  colors={["#d9c6e6", "#f7eff2"]}
+  style={{ flex: 1 }}
+>
+  <ScrollView
+    contentContainerStyle={styles.contentContainer}
+    showsVerticalScrollIndicator={false}
+  >
       <View style={styles.header}>
         <View style={styles.profileRow}>
           <Image
@@ -84,13 +88,10 @@ export default function ProfileScreen({ navigation }) {
     <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
   </Pressable>
 
-  <Pressable style={styles.menuItem}>
-    <Text style={styles.menuText}>Published ads</Text>
-    <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-  </Pressable>
 </View>
 
-      <View style={styles.adsSection}>
+        <View style={styles.adsSection}>
+        <Text style={styles.adsTitle}>Published ads</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -136,7 +137,8 @@ export default function ProfileScreen({ navigation }) {
       </Pressable>
 
       
-    </ScrollView>
+      </ScrollView>
+      </LinearGradient>
   );
 }
 
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 190,
-    backgroundColor: "#d9c6e6",
     justifyContent: "flex-start",
     paddingHorizontal: 20,
     paddingTop: 50,
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     alignSelf: "center",
     width: 100,
-    backgroundColor: "#5a00b5",
+    backgroundColor: "#ff2d98",
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
@@ -331,5 +332,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderWidth: 1,
     borderColor: "#eadbe0",
+  },
+  adsTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.deepPurple,
+    marginBottom: 10,
   },
 });

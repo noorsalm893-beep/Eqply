@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import {
   Alert,
   Image,
@@ -9,10 +9,14 @@ import {
   TextInput,
   View,
   SafeAreaView,
+  Dimensions,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
+import { LinearGradient } from "expo-linear-gradient";
+
+const { width } = Dimensions.get("window");
 
 const bestDeals = [
   {
@@ -78,22 +82,52 @@ const categories = [
   {
     id: 2,
     title: "Engineering",
-    icon: "hard-hat",
+    icon: "tools",
     type: "material",
   },
   {
     id: 3,
     title: "Fine Arts",
-    icon: "palette",
+    icon: "color-palette-outline",
     type: "ion",
   },
 ];
 
+const reviews = [
+  {
+    id: 1,
+    name: "Mohamed",
+    text: "Very useful app and easy to use.",
+    rating: 5,
+    image: require("../assets/ava1.jpeg"),
+  },
+  {
+    id: 2,
+    name: "Basmala",
+    text: "The equipment options are great and organized.",
+    rating: 4,
+    image: require("../assets/ava2.jpeg"),
+  },
+  {
+    id: 3,
+    name: "Adel",
+    text: "I found what I needed quickly and smoothly.",
+    rating: 5,
+    image: require("../assets/ava3.jpeg"),
+  },
+];
+
 export default function HomeScreen({ navigation }) {
+  const [activeReview, setActiveReview] = useState(0);
+  const reviewScrollRef = useRef(null);  
   const { user } = useAuth();
   const displayName =
     user?.name || user?.fullName || user?.username || "mariam";
-
+    const handleReviewScroll = (event) => {
+      const slideWidth = width - 28;
+      const index = Math.round(event.nativeEvent.contentOffset.x / slideWidth);
+      setActiveReview(index);
+    };
   const goTo = (screen, params = {}) => {
     if (navigation?.navigate) {
       navigation.navigate(screen, params);
@@ -122,7 +156,10 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.page}>
+      <LinearGradient
+  colors={["#d9c6e6", "#f8f1f3"]}
+  style={styles.page}
+>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -172,36 +209,51 @@ export default function HomeScreen({ navigation }) {
 
           <Text style={styles.sectionTitle}>User Reviews</Text>
 
-          <Pressable style={styles.reviewCard} onPress={() => goTo("Reviews")}>
-            <View style={styles.reviewLeft}>
-              <Image
-                source={require("../assets/ava4.jpeg")}
-                style={styles.reviewAvatar}
-              />
-              <View>
-                <Text style={styles.reviewName}>Title</Text>
-                <Text style={styles.reviewDesc}>Description</Text>
-              </View>
-            </View>
-
+          
+          <ScrollView
+            ref={reviewScrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleReviewScroll}
+            contentContainerStyle={styles.reviewsScrollContent}
+          >
+        {reviews.map((review) => (
+          <Pressable
+          key={review.id}
+          style={styles.reviewCard}
+          onPress={() => goTo("Reviews")}
+        >
+          <Image source={review.image} style={styles.reviewAvatar} />
+        
+          <View style={styles.reviewTextBox}>
+            <Text style={styles.reviewName}>{review.name}</Text>
+        
+            <Text style={styles.reviewDesc}>{review.text}</Text>
+        
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map((star) => (
                 <Ionicons
                   key={star}
                   name="star"
                   size={16}
-                  color="#E2A93B"
-                  style={{ marginLeft: 2 }}
+                  color={star <= review.rating ? "#E2A93B" : "#ddd"}
                 />
               ))}
             </View>
-          </Pressable>
-
-          <View style={styles.dotsRow}>
-            <View style={[styles.dot, styles.activeDot]} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
           </View>
+        </Pressable>
+  ))}
+</ScrollView>
+
+<View style={styles.dotsRow}>
+  {reviews.map((_, index) => (
+    <View
+      key={index}
+      style={[styles.dot, activeReview === index && styles.activeDot]}
+    />
+  ))}
+</View>
 
           <Text style={styles.sectionTitle}>My Orders</Text>
 
@@ -326,29 +378,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.seeMoreText}>See More</Text>
           </Pressable>
         </ScrollView>
-
-        <View style={styles.bottomNav}>
-          <Pressable style={styles.navItem} onPress={() => goTo("Cart")}>
-            <Feather name="shopping-cart" size={20} color="#ff4fa3" />
-          </Pressable>
-
-          <Pressable style={styles.navItem} onPress={() => goTo("Favourites")}>
-            <Ionicons name="heart-outline" size={21} color="#ff4fa3" />
-          </Pressable>
-
-          <Pressable style={styles.navItem} onPress={() => goTo("Home")}>
-            <Ionicons name="home-outline" size={21} color={colors.deepPurple} />
-          </Pressable>
-
-          <Pressable style={styles.navItem} onPress={() => goTo("Menu")}>
-            <Feather name="menu" size={21} color="#ff4fa3" />
-          </Pressable>
-
-          <Pressable style={styles.navItem} onPress={() => goTo("Profile")}>
-            <Ionicons name="person-outline" size={21} color="#ff4fa3" />
-          </Pressable>
-        </View>
-      </View>
+        </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -371,27 +401,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
   },
   avatar: {
-    width: 44,
-    height: 44,
+    width: 56,
+    height: 56,
     borderRadius: 22,
     marginRight: 10,
     borderWidth: 2,
     borderColor: "#fff",
   },
   helloText: {
-    fontSize: 12,
+    fontSize: 14,
     color: colors.deepPurple,
     fontWeight: "500",
   },
   nameText: {
-    fontSize: 14,
+    fontSize: 18,
     color: colors.deepPurple,
     fontWeight: "700",
   },
@@ -422,6 +454,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingHorizontal: 14,
     height: 42,
+    width: "85%",
+    alignSelf: "center",
     marginBottom: 12,
     elevation: 2,
     shadowColor: "#000",
@@ -442,13 +476,24 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 6,
   },
+  reviewsScrollContent: {
+    paddingRight: 4,
+  },
+  
+  reviewTextBox: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  
   reviewCard: {
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "flex-start",
-    justifyContent: "space-between",
+    width: width - 28,
+    marginRight: 0,
     elevation: 1,
     shadowColor: "#000",
     shadowOpacity: 0.06,
@@ -477,7 +522,7 @@ const styles = StyleSheet.create({
   starsRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 2,
+    marginTop: 8,
   },
   dotsRow: {
     flexDirection: "row",
