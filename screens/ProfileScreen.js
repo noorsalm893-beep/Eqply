@@ -61,34 +61,34 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      <View style={styles.infoSection}>
-        <Text style={styles.infoText}>Email: {displayEmail}</Text>
-        <Text style={styles.infoText}>Phone number: {displayPhone}</Text>
+      <View style={styles.infoCard}>
+  <Text style={styles.infoText}>Email: {displayEmail}</Text>
+  <Text style={styles.infoText}>Phone number: {displayPhone}</Text>
 
-        <View style={styles.profileTypeRow}>
-          <Text style={styles.profileTypeLabel}>Profile type:</Text>
-          <View style={styles.roleBadge}>
-            <Text style={styles.roleBadgeText}>{displayRole}</Text>
-          </View>
-        </View>
-      </View>
+  <View style={styles.profileTypeRow}>
+    <Text style={styles.profileTypeLabel}>Profile type:</Text>
+    <View style={styles.roleBadge}>
+      <Text style={styles.roleBadgeText}>{displayRole}</Text>
+    </View>
+  </View>
+</View>
 
-      <View style={styles.menuSection}>
-        <Pressable style={styles.menuItem}>
-          <Text style={styles.menuText}>My orders</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-        </Pressable>
+<View style={styles.menuCard}>
+  <Pressable style={styles.menuItem}>
+    <Text style={styles.menuText}>My orders</Text>
+    <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+  </Pressable>
 
-        <Pressable style={styles.menuItem}>
-          <Text style={styles.menuText}>Favourites</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-        </Pressable>
+  <Pressable style={styles.menuItem}>
+    <Text style={styles.menuText}>Favourites</Text>
+    <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+  </Pressable>
 
-        <Pressable style={styles.menuItem}>
-          <Text style={styles.menuText}>Published ads</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-        </Pressable>
-      </View>
+  <Pressable style={styles.menuItem}>
+    <Text style={styles.menuText}>Published ads</Text>
+    <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+  </Pressable>
+</View>
 
       <View style={styles.adsSection}>
         <ScrollView
@@ -221,6 +221,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0e6eb",
   },
   menuText: {
     fontSize: 18,
@@ -286,6 +288,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     alignItems: "center",
     marginBottom: 16,
+    marginTop: "auto",
   },
   editButton: {
     alignSelf: "center",
@@ -294,6 +297,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
+    marginBottom: "16",
   },
   buttonPressed: {
     opacity: 0.85,
@@ -307,5 +311,25 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 17,
     fontWeight: "700",
+  },
+  infoCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    marginTop: 22,
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#eadbe0",
+  },
+  
+  menuCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "#eadbe0",
   },
 });
