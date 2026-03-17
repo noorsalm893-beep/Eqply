@@ -101,6 +101,19 @@ export default function ForgotPasswordScreen() {
           onChangeText={setEmail}
           editable={!isSubmitting && !isSending}
         />
+        <Pressable
+  style={({ pressed }) => [
+    styles.nextButton,
+    pressed && styles.nextButtonPressed,
+    isSending && styles.buttonDisabled,
+  ]}
+  onPress={handleSendAgain}
+  disabled={isSending}
+>
+  <Text style={styles.nextButtonText}>
+    {isSending ? "Sending..." : "Send Code"}
+  </Text>
+</Pressable>
 
         <View style={styles.codeRow}>
           {[0, 1, 2, 3].map((index) => (
