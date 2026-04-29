@@ -255,31 +255,35 @@ export default function HomeScreen({ navigation }) {
   ))}
 </View>
 
-          <Text style={styles.sectionTitle}>My Orders</Text>
+{String(user?.role).toLowerCase() !== "vendor" && (
+  <>
+    <Text style={styles.sectionTitle}>My Orders</Text>
 
-          <View style={styles.orderRow}>
-            <Pressable
-              style={styles.orderChip}
-              onPress={() => goTo("ToPay")}
-            >
-              <Text style={styles.orderChipText}>To Pay</Text>
-            </Pressable>
+    <View style={styles.orderRow}>
+      <Pressable
+        style={styles.orderChip}
+        onPress={() => goTo("ToPay")}
+      >
+        <Text style={styles.orderChipText}>To Pay</Text>
+      </Pressable>
 
-            <Pressable
-              style={styles.orderChip}
-              onPress={() => goTo("Tracking")}
-            >
-              <Text style={styles.orderChipText}>Tracking</Text>
-              <View style={styles.greenDot} />
-            </Pressable>
+      <Pressable
+        style={styles.orderChip}
+        onPress={() => goTo("Tracking")}
+      >
+        <Text style={styles.orderChipText}>Tracking</Text>
+        <View style={styles.greenDot} />
+      </Pressable>
 
-            <Pressable
-              style={styles.orderChip}
-              onPress={() => goTo("Review")}
-            >
-              <Text style={styles.orderChipText}>Review</Text>
-            </Pressable>
-          </View>
+      <Pressable
+        style={styles.orderChip}
+        onPress={() => goTo("Review")}
+      >
+        <Text style={styles.orderChipText}>Review</Text>
+      </Pressable>
+    </View>
+  </>
+)}
 
           <Text style={styles.sectionTitle}>Best Deals</Text>
 

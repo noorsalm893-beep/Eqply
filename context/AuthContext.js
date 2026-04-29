@@ -5,14 +5,12 @@ const API_BASE_URL = "https://eqply-backend.onrender.com/api";
 const AUTH_ENDPOINTS = {
   login: "/auth/login",
   signup: "/auth/signup",
-  register: "/auth/signup",
   verifyAccount: "/auth/verify-account",
   forgotPassword: "/auth/forgot-password",
-  verifyCode: "/auth/verify-account",
   resetPassword: "/auth/reset-password",
+  resendVerification: "/auth/resend-verification",
   profile: "/auth/profile",
   updateProfile: "/users/profile",
-  uploadPhoto: "/users/profile/photo",
   logout: null,
 };
 
@@ -169,18 +167,21 @@ export function AuthProvider({ children }) {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
-
+  
       const token = resolveToken(data);
       if (!token) {
         throw new Error("Token missing in login response.");
       }
-
-      const userProfile = resolveUser(data);
-      await saveSession(token, userProfile);
+  
+      const basicUser = resolveUser(data);
+  
+      await saveSession(token, basicUser);
       setUserToken(token);
-      setUser(userProfile);
-
-      return { ok: true, token, user: userProfile };
+      setUser(basicUser);
+  
+      await fetchProfile(token);
+  
+      return { ok: true, token, user: basicUser };
     } catch (error) {
       return { ok: false, error: error.message || "Login failed." };
     }
@@ -193,6 +194,7 @@ export function AuthProvider({ children }) {
     phone,
     avatarIndex,
     role,
+    location,
   }) => {
     try {
       const normalizedRole = normalizeRole(role);
@@ -241,7 +243,7 @@ export function AuthProvider({ children }) {
       return {
         ok: true,
         message:
-          data?.message || "If that email exists, a reset link has been sent.",
+          data?.message || "If that email exists, a reset code has been sent.",
       };
     } catch (error) {
       return { ok: false, error: error.message || "Failed to send reset code." };
@@ -342,52 +344,10 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const uploadProfilePhoto = async (photoFile) => {
-    try {
-      if (!userToken) {
-        throw new Error("No user token found.");
-      }
-
-      if (!photoFile?.uri) {
-        throw new Error("Photo file is required.");
-      }
-
-      const formData = new FormData();
-      formData.append("photo", {
-        uri: photoFile.uri,
-        type: photoFile.type || "image/jpeg",
-        name: photoFile.name || "profile-photo.jpg",
-      });
-
-      const data = await apiRequest(AUTH_ENDPOINTS.uploadPhoto, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: formData,
-        isMultipart: true,
-      });
-
-      const updatedUser = {
-        ...(user || {}),
-        profilePhoto: data?.profilePhoto || user?.profilePhoto || null,
-      };
-
-      setUser(updatedUser);
-      await saveUserProfile(updatedUser);
-
-      return { ok: true, data, user: updatedUser };
-    } catch (error) {
-      return {
-        ok: false,
-        error: error.message || "Failed to upload profile photo.",
-      };
-    }
-  };
+  
 
   const signOut = async () => {
     try {
-      // Backend doc does not require a logout endpoint.
     } finally {
       await clearSession();
       setUserToken(null);
@@ -408,7 +368,6 @@ export function AuthProvider({ children }) {
     setNewPassword,
     fetchProfile,
     updateUserProfile,
-    uploadProfilePhoto,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

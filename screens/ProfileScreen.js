@@ -77,18 +77,19 @@ export default function ProfileScreen({ navigation }) {
   </View>
 </View>
 
-<View style={styles.menuCard}>
-  <Pressable style={styles.menuItem}>
-    <Text style={styles.menuText}>My orders</Text>
-    <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-  </Pressable>
+{String(displayRole).toLowerCase() !== "vendor" && (
+  <View style={styles.menuCard}>
+    <Pressable style={styles.menuItem}>
+      <Text style={styles.menuText}>My orders</Text>
+      <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+    </Pressable>
 
-  <Pressable style={styles.menuItem}>
-    <Text style={styles.menuText}>Favourites</Text>
-    <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-  </Pressable>
-
-</View>
+    <Pressable style={styles.menuItem}>
+      <Text style={styles.menuText}>Favourites</Text>
+      <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+    </Pressable>
+  </View>
+)}
 
         <View style={styles.adsSection}>
         <Text style={styles.adsTitle}>Published ads</Text>

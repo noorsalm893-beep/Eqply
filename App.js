@@ -15,6 +15,9 @@ import ForgotPasswordScreen from "./screens/ForgotPasswordScreen";
 import SetNewPasswordScreen from "./screens/SetNewPasswordScreen";
 import HomeScreen from "./screens/HomeScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import EditProfileScreen from "./screens/EditProfileScreen";
+import SettingsScreen from "./screens/SettingsScreen";
+import SubscriptionPlansScreen from "./screens/SubscriptionPlansScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -37,6 +40,7 @@ function AuthStack() {
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="SetNewPassword" component={SetNewPasswordScreen} />
+      <Stack.Screen name="Subscriptions" component={SubscriptionPlansScreen} />
     </Stack.Navigator>
   );
 }
@@ -44,27 +48,30 @@ function AuthStack() {
 function AppTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarActiveTintColor: colors.deepPurple,
-        tabBarInactiveTintColor: "#8e8e93",
-        tabBarStyle: { borderTopColor: "#f0e6f0" },
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName = "ellipse";
+  screenOptions={({ route }) => ({
+    headerShown: false,
+    tabBarActiveTintColor: colors.deepPurple,
+    tabBarInactiveTintColor: "#8e8e93",
+    tabBarStyle: { borderTopColor: "#f0e6f0" },
+    tabBarIcon: ({ focused, color, size }) => {
+      let iconName = "ellipse";
 
-          if (route.name === "Home") {
-            iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "Profile") {
-            iconName = focused ? "person" : "person-outline";
-          }
+      if (route.name === "Home") {
+        iconName = focused ? "home" : "home-outline";
+      } else if (route.name === "Profile") {
+        iconName = focused ? "person" : "person-outline";
+      } else if (route.name === "Settings") {
+        iconName = focused ? "settings" : "settings-outline";
+      }
 
-          return <Ionicons name={iconName} size={size} color={color} />;
-        },
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-    </Tab.Navigator>
+      return <Ionicons name={iconName} size={size} color={color} />;
+    },
+  })}
+>
+  <Tab.Screen name="Home" component={HomeScreen} />
+  <Tab.Screen name="Profile" component={ProfileScreen} />
+  <Tab.Screen name="Settings" component={SettingsScreen} />
+</Tab.Navigator>
   );
 }
 
@@ -73,7 +80,15 @@ function RootNavigator() {
 
   if (isLoading) return <SplashScreen />;
 
-  return isSignedIn ? <AppTabs /> : <AuthStack />;
+  return isSignedIn ? (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Tabs" component={AppTabs} />
+      <Stack.Screen name="Subscriptions" component={SubscriptionPlansScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+    </Stack.Navigator>
+  ) : (
+    <AuthStack />
+  );
 }
 
 export default function App() {

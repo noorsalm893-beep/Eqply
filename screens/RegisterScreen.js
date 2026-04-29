@@ -33,17 +33,25 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState("student");
+  const [location, setLocation] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleRegister = async () => {
     setError("");
     setIsSubmitting(true);
+    if (role === "vendor" && !location.trim()) {
+      setError("Location is required for vendors.");
+      setIsSubmitting(false);
+      return;
+    }
     const result = await signUp({
       name: name.trim(),
       email: email.trim(),
       password,
       role,
+      phone,
+      location: role === "vendor" ? location : undefined,
     });
     if (!result.ok) {
       setError(result.error || "Registration failed.");
@@ -193,6 +201,17 @@ export default function RegisterScreen() {
             editable={!isSubmitting}
           />
         </View>
+        {role === "vendor" && (
+  <TextInput
+    style={styles.input}
+    placeholder="Location"
+    placeholderTextColor="#9ca3af"
+    value={location}
+    onChangeText={setLocation}
+    editable={!isSubmitting}
+  />
+)}
+   
 
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
