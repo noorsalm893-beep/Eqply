@@ -24,24 +24,28 @@ const bestDeals = [
     title: "automatic level",
     price: "705EGP",
     image: require("../assets/Automatic-Level.jpg"),
+    type: "Rent / Buy",
   },
   {
     id: 2,
     title: "digital multimeter",
     price: "499EGP",
     image: require("../assets/Digital-Multimeter.jpg"),
+    type: "Rent / Buy",
   },
   {
     id: 3,
     title: "film scanner",
     price: "90EGP",
     image: require("../assets/Film-Scanner.jpg"),
+    type: "Rent / Buy",
   },
   {
     id: 4,
     title: "grinder",
     price: "600EGP",
     image: require("../assets/Grinder.jpg"),
+    type: "Rent / Buy",
   },
 ];
 
@@ -78,18 +82,21 @@ const categories = [
     title: "Media",
     icon: "camera-outline",
     type: "ion",
+    type: "Rent / Buy",
   },
   {
     id: 2,
     title: "Engineering",
     icon: "tools",
     type: "material",
+    type: "Rent / Buy",
   },
   {
     id: 3,
     title: "Fine Arts",
     icon: "color-palette-outline",
     type: "ion",
+    type: "Rent / Buy",
   },
 ];
 
@@ -304,6 +311,7 @@ export default function HomeScreen({ navigation }) {
                 <Image source={item.image} style={styles.productImage} />
 
                 <Text style={styles.productTitle}>{item.title}</Text>
+                <Text style={styles.typeBadge}>{item.type}</Text>
                 <View style={styles.productBottomRow}>
                   <Text style={styles.productPrice}>{item.price}</Text>
                   <Pressable onPress={() => goTo("ProductDetails", { item })}>
@@ -361,6 +369,7 @@ export default function HomeScreen({ navigation }) {
                 <Image source={item.image} style={styles.productImage} />
 
                 <Text style={styles.productTitle}>{item.title}</Text>
+                <Text style={styles.typeBadge}>{item.type}</Text>
                 <View style={styles.productBottomRow}>
                   <Text style={styles.productPrice}>{item.price}</Text>
                   <Pressable onPress={() => goTo("ProductDetails", { item })}>
@@ -675,5 +684,16 @@ const styles = StyleSheet.create({
   },
   navItem: {
     padding: 8,
+  },
+  typeBadge: {
+    alignSelf: "flex-start",
+    backgroundColor: "#f1e7ed",
+    color: colors.deepPurple,
+    fontSize: 12,
+    fontWeight: "700",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    marginBottom: 6,
   },
 });

@@ -84,12 +84,22 @@ export default function ProfileScreen({ navigation }) {
       <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
     </Pressable>
 
-    <Pressable style={styles.menuItem}>
-      <Text style={styles.menuText}>Favourites</Text>
-      <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-    </Pressable>
+    <Pressable
+  style={styles.menuItem}
+  onPress={() => navigation.navigate("Favorites")}
+>
+  <Text style={styles.menuText}>Favorites</Text>
+  <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+</Pressable>
   </View>
 )}
+<Pressable
+  style={styles.addProductButton}
+  onPress={() => navigation.navigate("AddProduct")}
+>
+  <Ionicons name="add" size={20} color="#fff" />
+  <Text style={styles.addProductText}>Add Product</Text>
+</Pressable>
 
         <View style={styles.adsSection}>
         <Text style={styles.adsTitle}>Published ads</Text>
@@ -339,5 +349,21 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.deepPurple,
     marginBottom: 10,
+  },
+  addProductButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ff2d98",
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginHorizontal: 20,
+    marginTop: 16,
+  },
+  addProductText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+    marginLeft: 6,
   },
 });

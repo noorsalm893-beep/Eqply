@@ -18,6 +18,17 @@ import ProfileScreen from "./screens/ProfileScreen";
 import EditProfileScreen from "./screens/EditProfileScreen";
 import SettingsScreen from "./screens/SettingsScreen";
 import SubscriptionPlansScreen from "./screens/SubscriptionPlansScreen";
+import SearchScreen from "./screens/SearchScreen";
+import ExploreEquipmentScreen from "./screens/ExploreEquipmentScreen";
+import BestDealsScreen from "./screens/BestDealsScreen";
+import CartScreen from "./screens/CartScreen";
+import FavoritesScreen from "./screens/FavoritesScreen";
+import AddProductScreen from "./screens/AddProductScreen";
+import AddressScreen from "./screens/AddressScreen";
+import TrackingOrderScreen from "./screens/TrackingOrderScreen";
+import TermsConditionsScreen from "./screens/TermsConditionsScreen";
+import FilterSortScreen from "./screens/FilterSortScreen";
+import ProductDetailsScreen from "./screens/ProductDetailsScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -85,6 +96,17 @@ function RootNavigator() {
       <Stack.Screen name="Tabs" component={AppTabs} />
       <Stack.Screen name="Subscriptions" component={SubscriptionPlansScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="Search" component={SearchScreen} />
+      <Stack.Screen name="ExploreEquipment" component={ExploreEquipmentScreen} />
+      <Stack.Screen name="BestDeals" component={BestDealsScreen} />
+      <Stack.Screen name="Cart" component={CartScreen} />
+      <Stack.Screen name="Favorites" component={FavoritesScreen} />
+      <Stack.Screen name="AddProduct" component={AddProductScreen} />
+      <Stack.Screen name="Address" component={AddressScreen} />
+      <Stack.Screen name="Tracking" component={TrackingOrderScreen} />
+      <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
+      <Stack.Screen name="FilterSort" component={FilterSortScreen} />
+      <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
     </Stack.Navigator>
   ) : (
     <AuthStack />

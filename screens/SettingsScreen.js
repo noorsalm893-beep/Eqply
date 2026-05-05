@@ -12,10 +12,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
+import RatingModal from "../components/RatingModal";
 
 export default function SettingsScreen({ navigation }) {
   const { signOut } = useAuth();
-
+  const [ratingVisible, setRatingVisible] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
@@ -117,16 +118,17 @@ export default function SettingsScreen({ navigation }) {
           <Text style={styles.sectionTitle}>Support</Text>
 
           <View style={styles.innerCard}>
-            <Pressable
-              style={styles.row}
-              onPress={() => handleComingSoon("Help Center")}
-            >
+            <Pressable style={styles.row} onPress={() => handleComingSoon("Help Center")}>
               <Text style={styles.rowText}>Help Center</Text>
               <Ionicons
                 name="chevron-forward"
                 size={22}
                 color={colors.deepPurple}
               />
+            </Pressable>
+            <Pressable style={styles.row} onPress={() => setRatingVisible(true)}>
+              <Text style={styles.rowText}>Rate App</Text>
+              <Ionicons name="chevron-forward" size={22} color={colors.deepPurple} />
             </Pressable>
 
             <Pressable
@@ -143,9 +145,9 @@ export default function SettingsScreen({ navigation }) {
 
             <Pressable
               style={[styles.row, styles.rowNoBorder]}
-              onPress={() => handleComingSoon("Privacy Policy")}
+              onPress={() => navigation.navigate("TermsConditions")}
             >
-              <Text style={styles.rowText}>Privacy Policy</Text>
+              <Text style={styles.rowText}>Terms & Conditions</Text>
               <Ionicons
                 name="chevron-forward"
                 size={22}
@@ -164,6 +166,7 @@ export default function SettingsScreen({ navigation }) {
         >
           <Text style={styles.logoutText}>Logout</Text>
         </Pressable>
+        <RatingModal visible={ratingVisible} onClose={() => setRatingVisible(false)}/>
       </ScrollView>
     </LinearGradient>
   );
