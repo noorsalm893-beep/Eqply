@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -11,6 +11,7 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 const initialFavorites = [
   {
@@ -40,28 +41,111 @@ const initialFavorites = [
 ];
 
 export default function FavoritesScreen({ navigation }) {
-  const [favorites, setFavorites] = useState(initialFavorites);
+  const [favorites, setFavorites] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { darkMode } = useAuth();
 
-  const removeFavorite = (id) => {
-    setFavorites((items) => items.filter((item) => item.id !== id));
+  const {
+    getFavorites,
+    toggleFavorite,
+    cartCount,
+  } = useAuth();
+
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+  
+  const loadFavorites = async () => {
+    try {
+      setIsLoading(true);
+  
+      const response = await getFavorites();
+  
+      if (response.ok) {
+        setFavorites(response.favorites || []);
+      } else {
+        Alert.alert(
+          "Error",
+          response.error || "Failed to load favorites."
+        );
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const removeFavorite = async (id) => {
+    const previousFavorites = favorites;
+  
+    setFavorites((items) =>
+      items.filter((item) => (item._id || item.id) !== id)
+    );
+  
+    const response = await toggleFavorite(id);
+  
+    if (!response.ok) {
+      Alert.alert(
+        "Error",
+        response.error || "Failed to remove favorite."
+      );
+  
+      setFavorites(previousFavorites);
+    }
   };
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f8f1f3"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
       >
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={22} color={colors.deepPurple} />
-          </Pressable>
+  <View style={styles.leftHeader}>
+    <Pressable
+      style={styles.backButton}
+      onPress={() => navigation.goBack()}
+    >
+      <Ionicons
+        name="chevron-back"
+        size={22}
+        color={colors.deepPurple}
+      />
+    </Pressable>
 
-          <View>
-            <Text style={styles.title}>Favorites</Text>
-            <Text style={styles.subtitle}>Your saved equipment</Text>
-          </View>
-        </View>
+    <View>
+      <Text style={styles.title}>Favorites</Text>
+      <Text style={styles.subtitle}>
+        Your saved equipment
+      </Text>
+    </View>
+  </View>
+
+  <Pressable
+    style={styles.cartButton}
+    onPress={() => navigation.navigate("Cart")}
+  >
+    <Ionicons
+      name="cart-outline"
+      size={24}
+      color="#ff4fa3"
+    />
+
+    {cartCount > 0 && (
+      <View style={styles.cartBadge}>
+        <Text style={styles.cartBadgeText}>
+          {cartCount}
+        </Text>
+      </View>
+    )}
+  </Pressable>
+</View>
 
         {favorites.length === 0 ? (
           <View style={styles.emptyCard}>
@@ -75,7 +159,7 @@ export default function FavoritesScreen({ navigation }) {
           <View style={styles.productsGrid}>
             {favorites.map((item) => (
               <Pressable
-                key={item.id}
+                key={item._id || item.id}
                 style={styles.productCard}
                 onPress={() =>
                   navigation.navigate("ProductDetails", { item })
@@ -83,12 +167,15 @@ export default function FavoritesScreen({ navigation }) {
               >
                 <Pressable
                   style={styles.heartButton}
-                  onPress={() => removeFavorite(item.id)}
+                  onPress={() => removeFavorite(item._id || item.id)}
                 >
                   <Ionicons name="heart" size={17} color="#ff2d98" />
                 </Pressable>
 
-                <Image source={item.image} style={styles.productImage} />
+                <Image source={ item.image ? item.image : { uri: item.imageUrl || "https://via.placeholder.com/150",  
+                }}
+                style={styles.productImage}
+                />
 
                 <Text style={styles.productTitle}>{item.title}</Text>
                 <Text style={styles.typeBadge}>{item.type}</Text>
@@ -123,6 +210,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 22,
   },
   backButton: {
@@ -230,5 +318,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     color: colors.deepPurple,
+  },
+  leftHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  
+  cartButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "#eadbe0",
+  },
+  
+  cartBadge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.deepPurple,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  
+  cartBadgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });

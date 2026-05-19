@@ -12,29 +12,9 @@ import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
 import { LinearGradient } from "expo-linear-gradient";
 
-const publishedAds = [
-  {
-    id: 1,
-    title: "lens",
-    price: "200EGP",
-    image: require("../assets/lens1.jpeg"),
-  },
-  {
-    id: 2,
-    title: "light",
-    price: "300EGP",
-    image: require("../assets/light1.jpeg"),
-  },
-  {
-    id: 3,
-    title: "microphone",
-    price: "600EGP",
-    image: require("../assets/mic1.jpeg"),
-  },
-];
 
 export default function ProfileScreen({ navigation }) {
-  const { user, signOut } = useAuth();
+  const { user, signOut, appMode, toggleAppMode, darkMode, } = useAuth();
 
   const displayName =
     user?.name || user?.fullName || user?.username || "mariam";
@@ -44,9 +24,11 @@ export default function ProfileScreen({ navigation }) {
 
   return (
     <LinearGradient
-  colors={["#d9c6e6", "#f7eff2"]}
-  style={{ flex: 1 }}
->
+      colors={
+      darkMode
+      ? ["#1A1625","#2A2338"]
+      : ["#d9c6e6","#f8f1f3"]
+      }>
   <ScrollView
     contentContainerStyle={styles.contentContainer}
     showsVerticalScrollIndicator={false}
@@ -76,54 +58,64 @@ export default function ProfileScreen({ navigation }) {
     </View>
   </View>
 </View>
+{displayRole.toLowerCase() !== "vendor" && (
+<Pressable
+style={styles.modeButton}
+onPress={toggleAppMode}
+>
+  <Text style={styles.modeButtonText}>
+    {appMode === "buy"
+      ? "Switch to Sell Mode"
+      : "Switch to Buy/Rent Mode"}
+  </Text>
+</Pressable>
+)}
 
-{String(displayRole).toLowerCase() !== "vendor" && (
+{appMode === "buy" && (
   <View style={styles.menuCard}>
-    <Pressable style={styles.menuItem}>
-      <Text style={styles.menuText}>My orders</Text>
+    <Pressable
+      style={styles.menuItem}
+      onPress={() => navigation.navigate("Tracking")}
+    >
+      <Text style={styles.menuText}>My Orders</Text>
       <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
     </Pressable>
 
     <Pressable
-  style={styles.menuItem}
-  onPress={() => navigation.navigate("Favorites")}
->
-  <Text style={styles.menuText}>Favorites</Text>
-  <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
-</Pressable>
+      style={[styles.menuItem, styles.lastMenuItem]}
+      onPress={() => navigation.navigate("Favorites")}
+    >
+      <Text style={styles.menuText}>Favorites</Text>
+      <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+    </Pressable>
   </View>
 )}
-<Pressable
-  style={styles.addProductButton}
-  onPress={() => navigation.navigate("AddProduct")}
->
-  <Ionicons name="add" size={20} color="#fff" />
-  <Text style={styles.addProductText}>Add Product</Text>
-</Pressable>
 
-        <View style={styles.adsSection}>
-        <Text style={styles.adsTitle}>Published ads</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.adsRow}
-        >
-          {publishedAds.map((item) => (
-            <View key={item.id} style={styles.adCard}>
-              <Pressable style={styles.heartIcon}>
-                <Ionicons name="heart-outline" size={18} color="#ff4fa3" />
-              </Pressable>
+{appMode === "sell" && (
+  <>
+    <View style={styles.menuCard}>
+      <Pressable
+        style={[styles.menuItem, styles.lastMenuItem]}
+        onPress={() => navigation.navigate("PublishedAds")}
+      >
+        <Text style={styles.menuText}>Published Ads</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.deepPurple} />
+      </Pressable>
+    </View>
 
-              <Image source={item.image} style={styles.adImage} />
-
-              <Text style={styles.adTitle}>{item.title}</Text>
-              <Text style={styles.adPrice}>{item.price}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      <Pressable style={styles.supportWrapper}>
+    <Pressable
+      style={styles.addProductButton}
+      onPress={() => navigation.navigate("AddProduct")}
+    >
+      <Ionicons name="add" size={20} color="#fff" />
+      <Text style={styles.addProductText}>Add Product</Text>
+    </Pressable>
+  </>
+)}
+      <Pressable
+        style={styles.supportWrapper}
+        onPress={() => navigation.navigate("HelpCenter")}
+      >
         <Text style={styles.supportText}>Support</Text>
       </Pressable>
 
@@ -365,5 +357,29 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 16,
     marginLeft: 6,
+  },
+  adsTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingRight: 20,
+    marginBottom: 10,
+  },
+  modeButton: {
+    backgroundColor: "#ff2d98",
+    marginHorizontal: 20,
+    marginTop: 16,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  
+  modeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  lastMenuItem: {
+    borderBottomWidth: 0,
   },
 });

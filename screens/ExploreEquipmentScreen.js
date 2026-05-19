@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -11,65 +11,13 @@ import {
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
-const equipment = [
-  {
-    id: 1,
-    title: "Makita Drill",
-    price: "380EGP",
-    category: "Engineering",
-    location: "Alexandria",
-    image: require("../assets/Makita-drill.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 2,
-    title: "Spray Gun",
-    price: "800EGP",
-    category: "Fine Arts",
-    location: "Cairo",
-    image: require("../assets/Spray-Gun.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 3,
-    title: "Total Station",
-    price: "620EGP",
-    category: "Engineering",
-    location: "Giza",
-    image: require("../assets/total-station.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 4,
-    title: "Soldering Iron",
-    price: "200EGP",
-    category: "Engineering",
-    location: "Alexandria",
-    image: require("../assets/Soldering-Iron.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 5,
-    title: "Film Scanner",
-    price: "90EGP",
-    category: "Media",
-    location: "Cairo",
-    image: require("../assets/Film-Scanner.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 6,
-    title: "Digital Multimeter",
-    price: "499EGP",
-    category: "Engineering",
-    location: "Alexandria",
-    image: require("../assets/Digital-Multimeter.jpg"),
-    type: "Rent / Buy",
-  },
-];
 
-export default function ExploreEquipmentScreen({ navigation }) {
+export default function ExploreEquipmentScreen({
+  navigation,
+  route,
+}) {
   const handleProductPress = (item) => {
     navigation.navigate("ProductDetails", { item })
   };
@@ -77,9 +25,30 @@ export default function ExploreEquipmentScreen({ navigation }) {
   const handleFavourite = () => {
     Alert.alert("Favourites", "Added to favourites.");
   };
+  const selectedCategory = route?.params?.category;
+  const { getProducts, darkMode } = useAuth();
+
+  const [equipment, setEquipment] = useState([]);
+  useEffect(() => {
+    const loadProducts = async () => {
+      const response = await getProducts();
+  
+      if (response.ok) {
+        setEquipment(response.products || []);
+      }
+    };
+  
+    loadProducts();
+  }, []);
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f8f1f3"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
@@ -114,9 +83,15 @@ export default function ExploreEquipmentScreen({ navigation }) {
         </View>
 
         <View style={styles.productsGrid}>
-          {equipment.map((item) => (
+          {equipment
+          .filter((item) => 
+          selectedCategory 
+          ? item.category?.toLowerCase() ===
+          selectedCategory?.toLowerCase() 
+          : true )
+          .map((item) => (
             <Pressable
-              key={item.id}
+              key={item._id || item.id}
               style={styles.productCard}
               onPress={() => handleProductPress(item)}
             >
@@ -124,24 +99,34 @@ export default function ExploreEquipmentScreen({ navigation }) {
                 <Ionicons name="heart-outline" size={16} color="#ff4fa3" />
               </Pressable>
 
-              <Image source={item.image} style={styles.productImage} />
+              <Image source={ item.image? item.image: { uri: item.picture?.startsWith("http") ? item.picture: 
+              `https://eqply-backend.onrender.com/uploads/${item.picture}`}} style={styles.productImage}/>
 
-              <Text style={styles.productTitle}>{item.title}</Text>
-              <Text style={styles.typeBadge}>{item.type}</Text>
-              <Text style={styles.productMeta}>{item.category}</Text>
+              <Text style={styles.productTitle}>{item.name || item.title}</Text>
+              <Text style={styles.typeBadge}>{item.rentAvailable && item.buyAvailable? "Rent / Buy": 
+              item.rentAvailable? "Rent": "Buy"}</Text>
+              <Text style={styles.productMeta}>{item.category || "General"}</Text>
 
               <View style={styles.locationRow}>
                 <Ionicons name="location-outline" size={14} color="#7b7280" />
-                <Text style={styles.locationText}>{item.location}</Text>
+                <Text style={styles.locationText}>{item?.vendor?.location || "Alexandria"}</Text>
               </View>
 
               <View style={styles.productBottomRow}>
-                <Text style={styles.productPrice}>{item.price}</Text>
-                <MaterialCommunityIcons
-                  name="storefront-outline"
-                  size={18}
-                  color={colors.deepPurple}
-                />
+                <Text style={styles.productPrice}>{item.buyPrice || item.rentOptions?.[0]?.price || "Price unavailable"} EGP</Text>
+                <Pressable
+                  style={styles.addCartButton}
+                  onPress={() => handleAddToCart(item)}>
+                 <Ionicons
+                   name="add"
+                   size={18}
+                   color="#fff"
+                  />
+
+                 <Text style={styles.addCartText}>
+                   Cart
+                  </Text>
+                </Pressable>
               </View>
             </Pressable>
           ))}
@@ -216,9 +201,9 @@ const styles = StyleSheet.create({
   productCard: {
     width: "48%",
     backgroundColor: "#fff",
-    borderRadius: 14,
+    borderRadius: 10,
     padding: 10,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: "#eadbe0",
     position: "relative",
@@ -234,10 +219,10 @@ const styles = StyleSheet.create({
   },
   productImage: {
     width: "100%",
-    height: 115,
+    height: 120,
     resizeMode: "contain",
-    marginTop: 14,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 10,
   },
   productTitle: {
     fontSize: 14,
@@ -280,5 +265,21 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 10,
     marginBottom: 6,
+  },
+  addCartButton:{
+    flexDirection:"row",
+    alignItems:"center",
+    justifyContent:"center",
+    backgroundColor:"#20B15A",
+    paddingHorizontal:10,
+    paddingVertical:6,
+    borderRadius:12,
+  },
+  
+  addCartText:{
+    color:"#fff",
+    fontSize:12,
+    fontWeight:"700",
+    marginLeft:3,
   },
 });

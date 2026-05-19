@@ -12,6 +12,29 @@ const AUTH_ENDPOINTS = {
   profile: "/auth/profile",
   updateProfile: "/users/profile",
   logout: null,
+  preferences: "/users/preferences",
+
+  products: "/products",
+  bestDeals: "/products/best-deals",
+  productCategories: "/products/categories",
+  productSearch: "/products/search",
+  myProducts: "/products/my-products",
+
+  recentReviews: "/reviews/recent",
+  createReview: "/reviews",
+  userReviews: "/reviews/user-reviews",
+
+  toggleFavorite: "/favorites/toggle",
+  favorites: "/favorites",
+
+  cart: "/cart",
+  cartAdd: "/cart/add",
+  cartRemove: "/cart/remove",
+  cartClear: "/cart/clear",
+
+  orders: "/orders",
+  orderStatus: "/orders/status",
+  orderStatusCounts: "/orders/status-counts",
 };
 
 const TOKEN_KEY = "eqply_user_token";
@@ -111,9 +134,245 @@ const clearSession = async () => {
 };
 
 export function AuthProvider({ children }) {
+  const getProducts = async () => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.products, {
+        method: "GET",
+      });
+  
+      const products = Array.isArray(data)
+  ? data
+  : data?.products || data?.data || [];
+
+return { ok: true, products };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to get products." };
+    }
+  };
+  
+  const searchProducts = async (query) => {
+    try {
+      const data = await apiRequest(
+        `${AUTH_ENDPOINTS.productSearch}?query=${encodeURIComponent(query)}`,
+        {
+          method: "GET",
+        }
+      );
+  
+      return { ok: true, products: data?.data || data || [] };
+    } catch (error) {
+      return { ok: false, error: error.message || "Search failed." };
+    }
+  };
+  
+  const getBestDeals = async () => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.bestDeals, {
+        method: "GET",
+      });
+  
+      const products = Array.isArray(data)
+  ? data
+  : data?.products || data?.data || [];
+
+return { ok: true, products };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to get best deals." };
+    }
+  };
+  
+  const getMyProducts = async () => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.myProducts, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+  
+      return { ok: true, products: data?.data || data || [] };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to get your products." };
+    }
+  };
+  const getFavorites = async () => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.favorites, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+  
+      return { ok: true, favorites: data?.data || data || [] };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to get favorites." };
+    }
+  };
+  const uploadProduct = async (productData) => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.products, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(productData),
+      });
+  
+      return {
+        ok: true,
+        product: data?.data || data,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message || "Failed to upload product.",
+      };
+    }
+  };
+  
+  const toggleFavorite = async (productId) => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.toggleFavorite, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ productId }),
+      });
+  
+      return { ok: true, message: data?.message || "Favorite updated." };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to update favorite." };
+    }
+  };
+  const getCart = async () => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.cart, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+  
+      return { ok: true, cart: data?.data || data };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to get cart." };
+    }
+  };
+  
+  const addToCart = async ({ productId, quantity = 1 }) => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.cartAdd, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ productId, quantity }),
+      });
+      await refreshCartCount();
+  
+      return { ok: true, cart: data?.data || data };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to add to cart." };
+    }
+  };
+  
+  const removeFromCart = async (productId) => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.cartRemove, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ productId }),
+      });
+      await refreshCartCount();
+  
+      return { ok: true, cart: data?.data || data };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to remove item." };
+    }
+  };
+  const createOrder = async ({
+    paymentMethod,
+    address,
+  }) => {
+    try {
+      const data = await apiRequest(AUTH_ENDPOINTS.orders, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          paymentMethod,
+          address,
+        }),
+      });
+  
+      return {
+        ok: true,
+        order: data?.data || data,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message || "Failed to create order.",
+      };
+    }
+  };
+  const updatePreferences = async ({ notifications, language, darkMode }) => {
+    try {
+      const payload = {};
+  
+      if (typeof notifications !== "undefined") {
+        payload.notifications = notifications;
+      }
+  
+      if (typeof language !== "undefined") {
+        payload.language = language;
+      }
+  
+      if (typeof darkMode !== "undefined") {
+        payload.darkMode = darkMode;
+      }
+  
+      const data = await apiRequest(AUTH_ENDPOINTS.preferences, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      });
+  
+      const updatedUser = data?.data || data;
+      setUser(updatedUser);
+      await saveUserProfile(updatedUser);
+  
+      return { ok: true, user: updatedUser };
+    } catch (error) {
+      return { ok: false, error: error.message || "Failed to update preferences." };
+    }
+  };
+
   const [userToken, setUserToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [subscription, setSubscription] = useState({
+    plan: "free",
+    isSubscribed: false,
+  });
+  const [darkMode, setDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
+  const [appMode, setAppMode] = useState(
+    user?.role === "vendor" ? "sell" : "buy"
+  );
+  
+  const toggleAppMode = () => {
+    if (user?.role === "vendor") return;
+  
+    setAppMode((prev) =>
+      prev === "buy" ? "sell" : "buy"
+    );
+  };
+  useEffect(() => {
+    if (user?.role === "vendor") {
+      setAppMode("sell");
+    }
+  }, [user]);
+
+  const getAuthHeaders = () => {
+    if (!userToken) {
+      throw new Error("No user token found.");
+    }
+  
+    return {
+      Authorization: `Bearer ${userToken}`,
+    };
+  };
+  
 
   useEffect(() => {
     const restoreToken = async () => {
@@ -354,6 +613,23 @@ export function AuthProvider({ children }) {
       setUser(null);
     }
   };
+  const refreshCartCount = async () => {
+    try {
+      const response = await getCart();
+  
+      if (response.ok) {
+        const items = response.cart?.items || [];
+        const totalItems = items.reduce(
+          (total, item) => total + (item.quantity || 1),
+          0
+        );
+  
+        setCartCount(totalItems);
+      }
+    } catch (error) {
+      setCartCount(0);
+    }
+  };
 
   const value = {
     userToken,
@@ -368,6 +644,29 @@ export function AuthProvider({ children }) {
     setNewPassword,
     fetchProfile,
     updateUserProfile,
+    getProducts,
+    searchProducts,
+    getBestDeals,
+    getMyProducts,
+
+    getFavorites,
+    toggleFavorite,
+
+    getCart,
+    addToCart,
+    removeFromCart,
+
+    updatePreferences,
+    appMode,
+    toggleAppMode,
+    createOrder,
+    uploadProduct,
+    subscription,
+    setSubscription,
+    cartCount,
+    refreshCartCount,
+    darkMode,
+    setDarkMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

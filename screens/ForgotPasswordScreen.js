@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   View,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/colors";
@@ -87,6 +88,10 @@ export default function ForgotPasswordScreen() {
           <View style={[styles.shapeTeal, styles.circleTeal]} />
           <View style={[styles.shapePink, styles.circlePink]} />
         </View>
+        <Image
+           source={require("../assets/eqply-logo.png")}
+           style={styles.logo}
+        />
 
         <Text style={styles.title}>Password Recovery</Text>
 
@@ -102,18 +107,18 @@ export default function ForgotPasswordScreen() {
           editable={!isSubmitting && !isSending}
         />
         <Pressable
-  style={({ pressed }) => [
-    styles.nextButton,
-    pressed && styles.nextButtonPressed,
-    isSending && styles.buttonDisabled,
-  ]}
-  onPress={handleSendAgain}
-  disabled={isSending}
->
-  <Text style={styles.nextButtonText}>
-    {isSending ? "Sending..." : "Send Code"}
-  </Text>
-</Pressable>
+          style={({ pressed }) => [
+          styles.nextButton,
+          pressed && styles.nextButtonPressed,
+          isSending && styles.buttonDisabled,
+         ]}
+          onPress={handleSendAgain}
+          disabled={isSending}
+        >
+        <Text style={styles.nextButtonText}>
+          {isSending ? "Sending..." : "Send Code"}
+      </Text>
+    </Pressable>
 
         <View style={styles.codeRow}>
           {[0, 1, 2, 3].map((index) => (
@@ -216,6 +221,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    resizeMode: "contain",
+    alignSelf: "center",
+    marginBottom: 18,
   },
   title: {
     fontSize: 28,

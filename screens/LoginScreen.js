@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   View,
+  Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../constants/colors";
@@ -43,6 +44,10 @@ export default function LoginScreen() {
           <View style={[styles.shapeTeal, styles.circleTeal]} />
           <View style={[styles.shapePink, styles.circlePink]} />
         </View>
+        <Image
+           source={require("../assets/eqply-logo.png")}
+           style={styles.logo}
+        />
 
         <Text style={styles.title}>Login</Text>
         <Text style={styles.subtitle}>Good to see you back! ❤</Text>
@@ -155,6 +160,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    resizeMode: "contain",
+    alignSelf: "center",
+    marginBottom: 18,
   },
   title: {
     fontSize: 28,

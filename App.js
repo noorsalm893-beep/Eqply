@@ -20,7 +20,6 @@ import SettingsScreen from "./screens/SettingsScreen";
 import SubscriptionPlansScreen from "./screens/SubscriptionPlansScreen";
 import SearchScreen from "./screens/SearchScreen";
 import ExploreEquipmentScreen from "./screens/ExploreEquipmentScreen";
-import BestDealsScreen from "./screens/BestDealsScreen";
 import CartScreen from "./screens/CartScreen";
 import FavoritesScreen from "./screens/FavoritesScreen";
 import AddProductScreen from "./screens/AddProductScreen";
@@ -29,6 +28,16 @@ import TrackingOrderScreen from "./screens/TrackingOrderScreen";
 import TermsConditionsScreen from "./screens/TermsConditionsScreen";
 import FilterSortScreen from "./screens/FilterSortScreen";
 import ProductDetailsScreen from "./screens/ProductDetailsScreen";
+import PublishedAdsScreen from "./screens/PublishedAdsScreen";
+import CheckoutScreen from "./screens/CheckoutScreen";
+import PaymentScreen from "./screens/PaymentScreen";
+import OrderSuccessScreen from "./screens/OrderSuccessScreen";
+import HelpCenterScreen from "./screens/HelpCenterScreen";
+import ContactUsScreen from "./screens/ContactUsScreen";
+import ChatListScreen from "./screens/ChatListScreen";
+import ChatScreen from "./screens/ChatScreen";
+import LanguageScreen from "./screens/LanguageScreen";
+import UploadPaymentProofScreen from "./screens/UploadPaymentProofScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -57,6 +66,8 @@ function AuthStack() {
 }
 
 function AppTabs() {
+  const { appMode } = useAuth();
+
   return (
     <Tab.Navigator
   screenOptions={({ route }) => ({
@@ -71,8 +82,8 @@ function AppTabs() {
         iconName = focused ? "home" : "home-outline";
       } else if (route.name === "Profile") {
         iconName = focused ? "person" : "person-outline";
-      } else if (route.name === "Settings") {
-        iconName = focused ? "settings" : "settings-outline";
+      } else if (route.name === "Favorites") {
+        iconName = focused ? "heart" : "heart-outline";
       }
 
       return <Ionicons name={iconName} size={size} color={color} />;
@@ -81,7 +92,12 @@ function AppTabs() {
 >
   <Tab.Screen name="Home" component={HomeScreen} />
   <Tab.Screen name="Profile" component={ProfileScreen} />
-  <Tab.Screen name="Settings" component={SettingsScreen} />
+  {appMode === "buy" && (
+  <Tab.Screen
+    name="Favorites"
+    component={FavoritesScreen}
+  />
+)}
 </Tab.Navigator>
   );
 }
@@ -98,7 +114,6 @@ function RootNavigator() {
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="ExploreEquipment" component={ExploreEquipmentScreen} />
-      <Stack.Screen name="BestDeals" component={BestDealsScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Favorites" component={FavoritesScreen} />
       <Stack.Screen name="AddProduct" component={AddProductScreen} />
@@ -107,6 +122,17 @@ function RootNavigator() {
       <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
       <Stack.Screen name="FilterSort" component={FilterSortScreen} />
       <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="PublishedAds" component={PublishedAdsScreen} />
+      <Stack.Screen name="Checkout" component={CheckoutScreen} />
+      <Stack.Screen name="Payment" component={PaymentScreen} />
+      <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
+      <Stack.Screen name="HelpCenter" component={HelpCenterScreen} />
+      <Stack.Screen name="ContactUs" component={ContactUsScreen} />
+      <Stack.Screen name="ChatList" component={ChatListScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="Language" component={LanguageScreen} />
+      <Stack.Screen name="UploadPaymentProof" component={UploadPaymentProofScreen} />
     </Stack.Navigator>
   ) : (
     <AuthStack />

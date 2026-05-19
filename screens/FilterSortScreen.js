@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 const categories = ["All", "Media", "Engineering", "Fine Arts"];
 const listingTypes = ["All", "Rent", "Buy", "Rent / Buy"];
@@ -19,6 +20,7 @@ export default function FilterSortScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
   const [selectedSort, setSelectedSort] = useState("Newest");
+  const { darkMode } = useAuth();
 
   const handleApply = () => {
     Alert.alert("Filters Applied", "Your selected filters have been applied.");
@@ -32,7 +34,13 @@ export default function FilterSortScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f8f1f3"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}

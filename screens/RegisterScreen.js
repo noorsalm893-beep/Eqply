@@ -77,6 +77,10 @@ export default function RegisterScreen() {
           <View style={[styles.shapeTeal, styles.circleTeal]} />
           <View style={[styles.shapePink, styles.circlePink]} />
         </View>
+        <Image
+           source={require("../assets/eqply-logo.png")}
+           style={styles.logo}
+        />
 
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.sectionTitle}>Choose Account Type</Text>
@@ -290,6 +294,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    resizeMode: "contain",
+    alignSelf: "center",
+    marginBottom: 18,
   },
   title: {
     fontSize: 28,

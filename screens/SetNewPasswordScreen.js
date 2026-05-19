@@ -68,6 +68,10 @@ export default function SetNewPasswordScreen() {
           <View style={[styles.shapeTeal, styles.circleTeal]} />
           <View style={[styles.shapePink, styles.circlePink]} />
         </View>
+        <Image
+           source={require("../assets/eqply-logo.png")}
+           style={styles.logo}
+        />
 
         <View style={styles.avatarWrap}>
           <Image
@@ -313,5 +317,12 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    resizeMode: "contain",
+    alignSelf: "center",
+    marginBottom: 18,
   },
 });

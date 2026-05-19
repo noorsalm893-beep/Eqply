@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 const trackingSteps = [
   {
@@ -37,9 +38,19 @@ const trackingSteps = [
   },
 ];
 
-export default function TrackingOrderScreen({ navigation }) {
+export default function TrackingOrderScreen({
+  navigation,
+  route
+ }) {
+  const { darkMode } = useAuth();
   return (
-    <LinearGradient colors={["#d9c6e6", "#f8f1f3"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
@@ -56,8 +67,13 @@ export default function TrackingOrderScreen({ navigation }) {
         </View>
 
         <View style={styles.orderCard}>
-          <Text style={styles.orderTitle}>Order #EQP-1024</Text>
-          <Text style={styles.orderText}>Makita Drill</Text>
+        <Text style={styles.orderTitle}>
+           Order #{route?.params?.orderId || "EQP-1024"}
+        </Text>
+
+        <Text style={styles.orderText}>
+           {route?.params?.productName || "Equipment"}
+        </Text>  
           <Text style={styles.orderText}>Estimated delivery: Today, 6:00 PM</Text>
         </View>
 
@@ -101,7 +117,10 @@ export default function TrackingOrderScreen({ navigation }) {
           ))}
         </View>
 
-        <Pressable style={styles.helpButton}>
+        <Pressable
+          style={styles.helpButton}
+          onPress={() => navigation.navigate("ContactUs")}
+        >
           <Ionicons name="chatbubble-ellipses-outline" size={20} color="#fff" />
           <Text style={styles.helpText}>Contact Support</Text>
         </Pressable>

@@ -11,6 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
 export default function AddressScreen({ navigation, route }) {
   const existingAddress = route?.params?.address;
@@ -22,6 +23,7 @@ export default function AddressScreen({ navigation, route }) {
   const [street, setStreet] = useState(existingAddress?.street || "");
   const [building, setBuilding] = useState(existingAddress?.building || "");
   const [notes, setNotes] = useState(existingAddress?.notes || "");
+  const { darkMode } = useAuth();
 
   const isEditing = Boolean(existingAddress);
 
@@ -40,7 +42,13 @@ export default function AddressScreen({ navigation, route }) {
   };
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f8f1f3"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}

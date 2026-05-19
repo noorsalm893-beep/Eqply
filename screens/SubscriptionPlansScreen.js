@@ -13,62 +13,108 @@ import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
 
 export default function SubscriptionPlansScreen({ navigation }) {
-  const { user } = useAuth();
+  const { user, subscription, setSubscription, darkMode } = useAuth();
 
+  const plansByRole = {
+    student: [
+      {
+        title: "🎒 Student Free",
+        price: "Free",
+        tag: "Up to 5 listings",
+        features: [
+          "Browse all listings",
+          "Rent tools nearby",
+          "24/7 support",
+          "Basic search filters",
+          "Upload up to 5 products",
+        ],
+      },
+      {
+        title: "🎒 Student Plus",
+        price: "EGP 49 / month",
+        tag: "Unlimited listings",
+        features: [
+          "Everything in Student Free",
+          "Upload unlimited products",
+          "Priority bookings",
+          "Advanced search filters",
+        ],
+      },
+    ],
+    freelancer: [
+      {
+        title: "⚡ Freelancer Free",
+        price: "Free",
+        tag: "Basic tools",
+        features: [
+          "Browse all listings",
+          "Rent tools nearby",
+          "Upload limited listings",
+          "Basic search filters",
+        ],
+      },
+      {
+        title: "⚡ Freelancer Pro",
+        price: "EGP 49 / month",
+        tag: "Most Popular",
+        features: [
+          "Everything in Free plan",
+          "Priority bookings",
+          "Unlimited listings",
+          "Analytics dashboard",
+        ],
+      },
+    ],
+    vendor: [
+      {
+        title: "🏪 Vendor Basic",
+        price: "Free",
+        tag: "Starter storefront",
+        features: [
+          "Browse all listings",
+          "Add basic listings",
+          "Manage published ads",
+          "Basic support",
+        ],
+      },
+      {
+        title: "🏪 Vendor Suite",
+        price: "EGP 120 / month",
+        tag: "Business plan",
+        features: [
+          "Everything in Vendor Basic",
+          "Storefront page",
+          "Bulk upload tools",
+          "Featured placement",
+        ],
+      },
+    ],
+  };
+  
   const userRole = String(user?.role || "student").toLowerCase();
-
-  const studentPlan = {
-    title: "Student Plan",
-    price: "50 EGP / month",
-    description: "A simple plan made for students who want easier access to equipment.",
-    features: [
-      "Browse equipment بسهولة",
-      "list more than 5 products",
-      "Save favourites",
-    ],
-    buttonText: "Subscribe Now",
+  const currentPlans = plansByRole[userRole] || plansByRole.student;
+  
+  const handleSubscribe = (plan) => {
+    if (plan.price === "Free") {
+      Alert.alert("Current Plan", "You are already on the free plan.");
+      return;
+    }
+  
+    setSubscription({
+      plan: plan.title,
+      isSubscribed: true,
+    });
+  
+    Alert.alert("Subscribed", `${plan.title} activated successfully.`);
   };
-
-  const freelancerPlan = {
-    title: "Freelancer Plan",
-    price: "100 EGP / month",
-    description: "A plan designed for freelancers who need more flexibility and visibility.",
-    features: [
-      "More profile visibility",
-      "Access to more equipment options",
-      "Priority support",
-      "Freelancer-focused tools",
-    ],
-    buttonText: "Subscribe Now",
-  };
-
-  const vendorPlan = {
-    title: "Vendor Plan",
-    price: "200 EGP / month",
-    description: "A plan designed for vendors who want to manage and publish equipment ads.",
-    features: [
-      "Publish equipment ads",
-      "Manage listings easily",
-      "Priority support",
-      "Better visibility for ads",
-    ],
-    buttonText: "Subscribe Now",
-  };
-
-  let currentPlan = studentPlan;
-
-  if (userRole === "freelancer") {
-    currentPlan = freelancerPlan;
-  } else if (userRole === "vendor") {
-    currentPlan = vendorPlan;
-  }
-
-  const handleSubscribe = () => {
-    Alert.alert("Subscription", `${currentPlan.title} selected.`);
-  };
-
   return (
-    <LinearGradient colors={["#d9c6e6", "#f7eff2"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
@@ -85,34 +131,34 @@ export default function SubscriptionPlansScreen({ navigation }) {
           Your plan is shown based on your account type.
         </Text>
 
-        <View style={styles.planCard}>
-          <Text style={styles.planTitle}>{currentPlan.title}</Text>
-          <Text style={styles.planPrice}>{currentPlan.price}</Text>
-          <Text style={styles.planDescription}>{currentPlan.description}</Text>
+        {currentPlans.map((plan) => (
+       <View key={plan.title} style={styles.planCard}>
+       <Text style={styles.planTitle}>{plan.title}</Text>
 
-          <View style={styles.featuresBox}>
-            {currentPlan.features.map((feature, index) => (
-              <View key={index} style={styles.featureRow}>
-                <Ionicons
-                  name="checkmark-circle"
-                  size={20}
-                  color={colors.primaryPink}
-                />
-                <Text style={styles.featureText}>{feature}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
+       <Text style={styles.planTag}>{plan.tag}</Text>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.subscribeButton,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={handleSubscribe}
+       <Text style={styles.planPrice}>{plan.price}</Text>
+
+          {plan.features.map((feature) => (
+       <Text key={feature} style={styles.featureText}>
+         • {feature}
+       </Text>
+     ))}
+
+       <Pressable
+          style={styles.subscribeButton}
+          onPress={() => handleSubscribe(plan)}
         >
-          <Text style={styles.subscribeButtonText}>{currentPlan.buttonText}</Text>
-        </Pressable>
+      <Text style={styles.subscribeButtonText}>
+      {plan.price === "Free"
+        ? "Current Plan"
+        : subscription?.plan === plan.title
+        ? "Subscribed"
+        : "Subscribe"}
+      </Text>
+    </Pressable>
+  </View>
+))}
       </ScrollView>
     </LinearGradient>
   );
@@ -207,5 +253,16 @@ const styles = StyleSheet.create({
   },
   buttonPressed: {
     opacity: 0.9,
+  },
+  planTag: {
+    alignSelf: "flex-start",
+    backgroundColor: "#f1e7ed",
+    color: "#ff2d98",
+    fontSize: 13,
+    fontWeight: "800",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    marginBottom: 10,
   },
 });

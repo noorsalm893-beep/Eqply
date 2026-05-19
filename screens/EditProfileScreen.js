@@ -22,7 +22,7 @@ const AVATARS = [
 ];
 
 export default function EditProfileScreen({ navigation }) {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, darkMode } = useAuth();
 
   const displayRole = String(user?.role || "student").toLowerCase();
 
@@ -79,7 +79,13 @@ export default function EditProfileScreen({ navigation }) {
   };
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f7eff2"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}

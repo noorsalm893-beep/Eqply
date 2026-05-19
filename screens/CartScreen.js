@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -7,32 +7,46 @@ import {
   StyleSheet,
   Text,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
+import { useAuth } from "../context/AuthContext";
 
-const initialCartItems = [
-  {
-    id: 1,
-    title: "Makita Drill",
-    price: 380,
-    quantity: 1,
-    image: require("../assets/Makita-drill.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 2,
-    title: "Film Scanner",
-    price: 90,
-    quantity: 1,
-    image: require("../assets/Film-Scanner.jpg"),
-    type: "Rent / Buy",
-  },
-];
 
 export default function CartScreen({ navigation }) {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [cartItems, setCartItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { getCart, removeFromCart, darkMode } = useAuth();
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+  
+  const loadCart = async () => {
+    try {
+      setIsLoading(true);
+  
+      const response = await getCart();
+  
+      if (response.ok) {
+        const cartData = response.cart;
+  
+        setCartItems(cartData?.items || []);
+      } else {
+        Alert.alert(
+          "Cart Error",
+          response.error || "Failed to load cart."
+        );
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const increaseQty = (id) => {
     setCartItems((items) =>
@@ -52,20 +66,55 @@ export default function CartScreen({ navigation }) {
     );
   };
 
-  const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  const removeItem = async (id) => {
+  const previousItems = cartItems;
+
+  setCartItems((items) =>
+    items.filter(
+      (item) =>
+        (item.productId?._id || item._id || item.id) !== id
+    )
+  );
+
+  const response = await removeFromCart(id);
+
+  if (!response.ok) {
+    Alert.alert(
+      "Error",
+      response.error || "Failed to remove item."
+    );
+
+    setCartItems(previousItems);
+  }
   };
 
   const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total,item)=>{
+    
+    const price =
+    item.productId?.buyPrice ||
+    item.productId?.rentOptions?.[0]?.price ||
+    item.buyPrice ||
+    item.price ||
+    0;
+    
+    return total + (price * (item.quantity || 1));
+    
+    },
     0
-  );
+    );
 
   const delivery = cartItems.length > 0 ? 40 : 0;
   const total = subtotal + delivery;
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f8f1f3"]} style={styles.screen}>
+    <LinearGradient
+colors={
+darkMode
+? ["#1A1625","#2A2338"]
+: ["#d9c6e6","#f8f1f3"]
+}
+>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
@@ -78,7 +127,14 @@ export default function CartScreen({ navigation }) {
           <Text style={styles.title}>My Cart</Text>
         </View>
 
-        {cartItems.length === 0 ? (
+        {isLoading && (
+           <ActivityIndicator
+            size="large"
+            color={colors.deepPurple}
+            style={{ marginTop: 50 }}
+          />
+        )}
+        {!isLoading && cartItems.length === 0 ? (
           <View style={styles.emptyCard}>
             <Ionicons name="cart-outline" size={54} color={colors.deepPurple} />
             <Text style={styles.emptyTitle}>Your cart is empty</Text>
@@ -89,14 +145,28 @@ export default function CartScreen({ navigation }) {
         ) : (
           <>
             {cartItems.map((item) => (
-              <View key={item.id} style={styles.cartCard}>
-                <Image source={item.image} style={styles.itemImage} />
+              <View key={item.productId?._id || item._id || item.id} style={styles.cartCard}>
+                <Image
+                   source={{
+                   uri:
+                   item.productId?.imageUrl ||
+                   item.imageUrl ||
+                   "https://via.placeholder.com/150",
+                   }}
+                  style={styles.itemImage}
+               />
 
                 <View style={styles.itemInfo}>
-                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <Text style={styles.itemTitle}>{item.productId?.name || item.title}</Text>
                   <Text style={styles.itemType}>{item.type}</Text>
-                  <Text style={styles.itemPrice}>{item.price} EGP</Text>
-
+                  <Text style={styles.itemPrice}>
+{
+item.productId?.buyPrice ||
+item.productId?.rentOptions?.[0]?.price ||
+item.price ||
+0
+} EGP
+</Text>
                   <View style={styles.quantityRow}>
                     <Pressable
                       style={styles.qtyButton}
@@ -118,7 +188,11 @@ export default function CartScreen({ navigation }) {
 
                 <Pressable
                   style={styles.removeButton}
-                  onPress={() => removeItem(item.id)}
+                  onPress={() =>
+                    removeItem(
+                      item.productId?._id || item._id || item.id
+                    )
+                  }
                 >
                   <Ionicons name="trash-outline" size={20} color="#ff2d98" />
                 </Pressable>
@@ -148,7 +222,12 @@ export default function CartScreen({ navigation }) {
 
             <Pressable
               style={styles.checkoutButton}
-              onPress={() => Alert.alert("Checkout", "Address page will be added next.")}
+              onPress={() => navigation.navigate("Checkout", {
+                cartItems,
+                subtotal,
+                delivery,
+                total,
+              })}
             >
               <Text style={styles.checkoutText}>Checkout</Text>
             </Pressable>

@@ -15,10 +15,15 @@ import { useAuth } from "../context/AuthContext";
 import RatingModal from "../components/RatingModal";
 
 export default function SettingsScreen({ navigation }) {
-  const { signOut } = useAuth();
+  const {
+    signOut,
+    updatePreferences,
+    darkMode,
+    setDarkMode,
+  } = useAuth();
   const [ratingVisible, setRatingVisible] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
@@ -27,9 +32,34 @@ export default function SettingsScreen({ navigation }) {
   const handleComingSoon = (title) => {
     Alert.alert(title, "This feature will be added later.");
   };
+  const handleUpdatePreferences = async (updates) => {
+    try {
+      setIsSavingPreferences(true);
+  
+      const response = await updatePreferences(updates);
+  
+      if (!response.ok) {
+        Alert.alert(
+          "Error",
+          response.error || "Failed to update preferences."
+        );
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong.");
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
 
   return (
-    <LinearGradient colors={["#d9c6e6", "#f7eff2"]} style={styles.screen}>
+    <LinearGradient
+  colors={
+    darkMode
+      ? ["#1A1625", "#2A2338"]
+      : ["#d9c6e6", "#f7eff2"]
+  }
+  style={styles.screen}
+>
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
@@ -43,9 +73,9 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Account</Text>
+        <Text style={styles.sectionTitle}>Account</Text>
 
-          <View style={styles.innerCard}>
+        <View style={styles.innerCard}>
             <Pressable
               style={styles.row}
               onPress={() => navigation.navigate("EditProfile")}
@@ -73,14 +103,20 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
+        <Text style={styles.sectionTitle}>Preferences</Text>
 
-          <View style={styles.innerCard}>
+        <View style={styles.innerCard}>
             <View style={styles.row}>
-              <Text style={styles.rowText}>Notifications</Text>
+            <Text style={styles.rowText}>Notifications</Text>
               <Switch
                 value={notificationsEnabled}
-                onValueChange={setNotificationsEnabled}
+                onValueChange={async (value) => {
+                  setNotificationsEnabled(value);
+                
+                  await handleUpdatePreferences({
+                    notifications: value,
+                  });
+                }}
                 trackColor={{ false: "#d9c6e6", true: "#f48acb" }}
                 thumbColor="#fff"
               />
@@ -88,12 +124,14 @@ export default function SettingsScreen({ navigation }) {
 
             <Pressable
               style={styles.row}
-              onPress={() => handleComingSoon("Language")}
-            >
+              onPress={() => navigation.navigate("Language")}>
+
               <Text style={styles.rowText}>Language</Text>
 
               <View style={styles.rowRight}>
-                <Text style={styles.secondaryText}>English</Text>
+              <Text style={styles.secondaryText}>
+                 Select
+              </Text>
                 <Ionicons
                   name="chevron-forward"
                   size={22}
@@ -103,10 +141,16 @@ export default function SettingsScreen({ navigation }) {
             </Pressable>
 
             <View style={[styles.row, styles.rowNoBorder]}>
-              <Text style={styles.rowText}>Dark Mode</Text>
+            <Text style={styles.rowText}>Dark Mode</Text>
               <Switch
-                value={darkModeEnabled}
-                onValueChange={setDarkModeEnabled}
+                 value={darkMode}
+                 onValueChange={async (value) => {
+                 setDarkMode(value);
+
+                 await handleUpdatePreferences({
+                 darkMode: value,
+                });
+              }}
                 trackColor={{ false: "#d9c6e6", true: "#f48acb" }}
                 thumbColor="#fff"
               />
@@ -115,31 +159,33 @@ export default function SettingsScreen({ navigation }) {
         </View>
 
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Support</Text>
+        <Text style={styles.sectionTitle}>Support</Text>
 
-          <View style={styles.innerCard}>
-            <Pressable style={styles.row} onPress={() => handleComingSoon("Help Center")}>
-              <Text style={styles.rowText}>Help Center</Text>
+        <View style={styles.innerCard}>
+            <Pressable style={styles.row} onPress={() => navigation.navigate("HelpCenter")}>
+            <Text style={styles.rowText}>Help Center</Text>
               <Ionicons
                 name="chevron-forward"
                 size={22}
                 color={colors.deepPurple}
+                onPress={() => navigation.navigate("HelpCenter")}
               />
             </Pressable>
             <Pressable style={styles.row} onPress={() => setRatingVisible(true)}>
-              <Text style={styles.rowText}>Rate App</Text>
+            <Text style={styles.rowText}>Rate App</Text>
               <Ionicons name="chevron-forward" size={22} color={colors.deepPurple} />
             </Pressable>
 
             <Pressable
               style={styles.row}
-              onPress={() => handleComingSoon("Contact Us")}
+              onPress={() => navigation.navigate("ContactUs")}
             >
               <Text style={styles.rowText}>Contact Us</Text>
               <Ionicons
                 name="chevron-forward"
                 size={22}
                 color={colors.deepPurple}
+                onPress={() => navigation.navigate("ContactUs")}
               />
             </Pressable>
 
@@ -200,25 +246,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 30,
     fontWeight: "700",
-    color: colors.deepPurple,
   },
   sectionCard: {
-    backgroundColor: "#ffffff77",
     borderRadius: 22,
     padding: 14,
     marginBottom: 22,
     borderWidth: 1,
-    borderColor: "#eadbe0",
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: colors.deepPurple,
     marginBottom: 12,
     paddingLeft: 4,
   },
   innerCard: {
-    backgroundColor: "#fff",
     borderRadius: 18,
     paddingHorizontal: 18,
     paddingVertical: 6,
@@ -239,7 +280,6 @@ const styles = StyleSheet.create({
   rowText: {
     fontSize: 17,
     fontWeight: "600",
-    color: colors.deepPurple,
   },
   rowRight: {
     flexDirection: "row",

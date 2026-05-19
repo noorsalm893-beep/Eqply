@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Image,
@@ -18,85 +18,27 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
-const bestDeals = [
-  {
-    id: 1,
-    title: "automatic level",
-    price: "705EGP",
-    image: require("../assets/Automatic-Level.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 2,
-    title: "digital multimeter",
-    price: "499EGP",
-    image: require("../assets/Digital-Multimeter.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 3,
-    title: "film scanner",
-    price: "90EGP",
-    image: require("../assets/Film-Scanner.jpg"),
-    type: "Rent / Buy",
-  },
-  {
-    id: 4,
-    title: "grinder",
-    price: "600EGP",
-    image: require("../assets/Grinder.jpg"),
-    type: "Rent / Buy",
-  },
-];
-
-const exploreEquipment = [
-  {
-    id: 5,
-    title: "makita drill",
-    price: "380EGP",
-    image: require("../assets/Makita-drill.jpg"),
-  },
-  {
-    id: 6,
-    title: "spray gun",
-    price: "800EGP",
-    image: require("../assets/Spray-Gun.jpg"),
-  },
-  {
-    id: 7,
-    title: "total station",
-    price: "620EGP",
-    image: require("../assets/total-station.jpg"),
-  },
-  {
-    id: 8,
-    title: "soldering iron",
-    price: "200EGP",
-    image: require("../assets/Soldering-Iron.jpg"),
-  },
-];
-
 const categories = [
   {
     id: 1,
     title: "Media",
     icon: "camera-outline",
-    type: "ion",
-    type: "Rent / Buy",
+    iconType: "ion",
+    category: "Media",
   },
   {
     id: 2,
     title: "Engineering",
-    icon: "tools",
-    type: "material",
-    type: "Rent / Buy",
+    icon: "hammer-wrench",
+    iconType: "material",
+    category: "Engineering",
   },
   {
     id: 3,
     title: "Fine Arts",
     icon: "color-palette-outline",
-    type: "ion",
-    type: "Rent / Buy",
+    iconType: "ion",
+    category: "Fine Arts",
   },
 ];
 
@@ -127,14 +69,25 @@ const reviews = [
 export default function HomeScreen({ navigation }) {
   const [activeReview, setActiveReview] = useState(0);
   const reviewScrollRef = useRef(null);  
-  const { user } = useAuth();
-  const displayName =
+  const {
+    user,
+    toggleFavorite,
+    addToCart,
+    appMode,
+    cartCount,
+    refreshCartCount,
+    getBestDeals,
+    getProducts,
+    darkMode,
+  } = useAuth();
+    const displayName =
     user?.name || user?.fullName || user?.username || "mariam";
     const handleReviewScroll = (event) => {
       const slideWidth = width - 28;
       const index = Math.round(event.nativeEvent.contentOffset.x / slideWidth);
       setActiveReview(index);
     };
+    
   const goTo = (screen, params = {}) => {
     if (navigation?.navigate) {
       navigation.navigate(screen, params);
@@ -142,13 +95,87 @@ export default function HomeScreen({ navigation }) {
       Alert.alert("Navigation", `${screen} screen is not added yet.`);
     }
   };
+  const [likedProducts, setLikedProducts] = useState([]);
+  const [bestDealsData, setBestDealsData] = useState([]);
+  const [exploreData, setExploreData] = useState([]);
+  useEffect(() => {
+    refreshCartCount();
+  }, []);
+  useEffect(() => {
+    const loadProducts = async () => {
+      const dealsResponse = await getBestDeals();
+      const productsResponse = await getProducts();
+      console.log("PRODUCTS RESPONSE:", productsResponse);
+      console.log("DEALS RESPONSE:", dealsResponse);
+  
+      if (productsResponse.ok) {
+        const allProducts = productsResponse.products || [];
+  
+        setExploreData(allProducts);
+  
+        const deals =
+          allProducts.filter((item) => item.bestDeal) || [];
+  
+        setBestDealsData(
+          deals.length > 0 ? deals : allProducts.slice(0, 2)
+        );
+      }
+  
+      if (dealsResponse.ok && dealsResponse.products?.length > 0) {
+        setBestDealsData(dealsResponse.products);
+      }
+    };
+  
+    loadProducts();
+  }, []);
 
-  const handleFavourite = () => {
-    Alert.alert("Favourites", "Added to favourites.");
+    const handleFavourite = async (id) => {
+    const isLiked = likedProducts.includes(id);
+  
+    setLikedProducts((prev) =>
+      isLiked
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    );
+  
+    const response = await toggleFavorite(id);
+  
+    if (!response.ok) {
+      Alert.alert("Error", response.error || "Failed to update favorite.");
+  
+      setLikedProducts((prev) =>
+        isLiked
+          ? [...prev, id]
+          : prev.filter((item) => item !== id)
+      );
+    }
   };
-
+  const handleAddToCart = async (item) => {
+    try {
+      const productId = item._id || item.id;
+  
+      if (!productId) {
+        Alert.alert("Error", "Product ID missing.");
+        return;
+      }
+  
+      const response = await addToCart({
+        productId,
+        quantity: 1,
+      });
+  
+      if (!response.ok) {
+        Alert.alert(
+          "Cart Error",
+          response.error || "Failed to add item."
+        );
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong.");
+    }
+  };
   const renderCategoryIcon = (item) => {
-    if (item.type === "material") {
+    if (item.iconType === "material") {
       return (
         <MaterialCommunityIcons
           name={item.icon}
@@ -160,13 +187,16 @@ export default function HomeScreen({ navigation }) {
 
     return <Ionicons name={item.icon} size={34} color={colors.deepPurple} />;
   };
+  const [showMoreDeals, setShowMoreDeals] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <LinearGradient
-  colors={["#d9c6e6", "#f8f1f3"]}
-  style={styles.page}
->
+        colors={
+          darkMode
+          ? ["#1A1625","#2A2338"]
+          : ["#d9c6e6","#f8f1f3"]
+          }>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -178,24 +208,43 @@ export default function HomeScreen({ navigation }) {
                 style={styles.avatar}
               />
               <View>
-                <Text style={styles.helloText}>Hello,</Text>
-                <Text style={styles.nameText}>{displayName}</Text>
-              </View>
+<Text
+numberOfLines={1}
+style={{
+fontSize:16,
+fontWeight:"700",
+color:"#C86A9E",
+maxWidth:160,
+}}
+>
+Hello, {displayName}
+</Text>
+</View>
             </View>
 
             <View style={styles.headerIcons}>
-              <Pressable
-                style={styles.iconButton}
-                onPress={() => goTo("Cart")}
-              >
-                <Feather name="shopping-cart" size={18} color="#ff4fa3" />
-              </Pressable>
+            {appMode === "buy" && (
+<Pressable
+  style={styles.iconButton}
+  onPress={() => goTo("Cart")}
+>
+  <Feather name="shopping-cart" size={25} color="#ff4fa3" />
+
+  {cartCount > 0 && (
+    <View style={styles.cartBadge}>
+      <Text style={styles.cartBadgeText}>
+        {cartCount}
+      </Text>
+    </View>
+  )}
+</Pressable>
+)}
 
               <Pressable
                 style={styles.iconButton}
-                onPress={() => goTo("Menu")}
+                onPress={() => goTo("Settings")}
               >
-                <Feather name="menu" size={18} color="#ff4fa3" />
+                <Feather name="menu" size={25} color="#ff4fa3" />
               </Pressable>
             </View>
           </View>
@@ -214,112 +263,70 @@ export default function HomeScreen({ navigation }) {
             />
           </Pressable>
 
-          <Text style={styles.sectionTitle}>User Reviews</Text>
 
-          
-          <ScrollView
-            ref={reviewScrollRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={handleReviewScroll}
-            contentContainerStyle={styles.reviewsScrollContent}
-          >
-        {reviews.map((review) => (
-          <Pressable
-          key={review.id}
-          style={styles.reviewCard}
-          onPress={() => goTo("Reviews")}
-        >
-          <Image source={review.image} style={styles.reviewAvatar} />
-        
-          <View style={styles.reviewTextBox}>
-            <Text style={styles.reviewName}>{review.name}</Text>
-        
-            <Text style={styles.reviewDesc}>{review.text}</Text>
-        
-            <View style={styles.starsRow}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons
-                  key={star}
-                  name="star"
-                  size={16}
-                  color={star <= review.rating ? "#E2A93B" : "#ddd"}
-                />
-              ))}
-            </View>
-          </View>
-        </Pressable>
-  ))}
-</ScrollView>
-
-<View style={styles.dotsRow}>
-  {reviews.map((_, index) => (
-    <View
-      key={index}
-      style={[styles.dot, activeReview === index && styles.activeDot]}
-    />
-  ))}
-</View>
-
-{String(user?.role).toLowerCase() !== "vendor" && (
-  <>
-    <Text style={styles.sectionTitle}>My Orders</Text>
-
-    <View style={styles.orderRow}>
-      <Pressable
-        style={styles.orderChip}
-        onPress={() => goTo("ToPay")}
-      >
-        <Text style={styles.orderChipText}>To Pay</Text>
-      </Pressable>
-
-      <Pressable
-        style={styles.orderChip}
-        onPress={() => goTo("Tracking")}
-      >
-        <Text style={styles.orderChipText}>Tracking</Text>
-        <View style={styles.greenDot} />
-      </Pressable>
-
-      <Pressable
-        style={styles.orderChip}
-        onPress={() => goTo("Review")}
-      >
-        <Text style={styles.orderChipText}>Review</Text>
-      </Pressable>
-    </View>
-  </>
-)}
-
-          <Text style={styles.sectionTitle}>Best Deals</Text>
+        {appMode === "buy" && (
+        <>
+          <Text style={[ styles.sectionTitle, { color: "#C86A9E" }]}>Best Deals</Text>
 
           <View style={styles.productsGrid}>
-            {bestDeals.map((item) => (
+          {(showMoreDeals
+             ? bestDealsData
+             : bestDealsData.slice(0, 2)
+             ).map((item) => (
               <Pressable
-                key={item.id}
-                style={styles.productCard}
+              key={item._id || item.id}
+              style={styles.productCard}
                 onPress={() => goTo("ProductDetails", { item })}
               >
-                <Pressable
-                  style={styles.heartButton}
-                  onPress={handleFavourite}
-                >
-                  <Ionicons name="heart-outline" size={15} color="#ff4fa3" />
+                  <Pressable
+                    style={styles.heartButton}
+                    onPress={() => handleFavourite(item._id)}
+                  >
+                  <Ionicons
+                    name={likedProducts.includes(item._id) ? "heart" : "heart-outline"}
+                    size={25}
+                    color="#ff4fa3"
+                 />
                 </Pressable>
 
-                <Image source={item.image} style={styles.productImage} />
+                <Image
+  source={
+    item.image
+      ? item.image
+      : {
+          uri: item.picture
+            ? item.picture.startsWith("http")
+              ? item.picture
+              : `https://eqply-backend.onrender.com/uploads/${item.picture}`
+            : "https://via.placeholder.com/150",
+        }
+  }
+  style={styles.productImage}
+/>
 
-                <Text style={styles.productTitle}>{item.title}</Text>
-                <Text style={styles.typeBadge}>{item.type}</Text>
+                <Text style={styles.nameText}>{item.name || item.title}</Text>
+                <Text style={styles.typeBadge}>{item.rentAvailable && item.buyAvailable
+                  ? "Rent / Buy"
+                  : item.rentAvailable
+                  ? "Rent"
+                  : "Buy"}</Text>
                 <View style={styles.productBottomRow}>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                  <Pressable onPress={() => goTo("ProductDetails", { item })}>
-                    <MaterialCommunityIcons
-                      name="storefront-outline"
-                      size={18}
-                      color={colors.deepPurple}
-                    />
+                  <Text style={styles.productPrice}>{item.buyPrice ||
+                    item.rentOptions?.[0]?.price ||
+                    "Price unavailable"} EGP</Text>
+                  <Pressable
+  style={styles.addCartButton}
+  onPress={() => handleAddToCart(item)}
+>
+  <Ionicons
+    name="add"
+    size={18}
+    color="#fff"
+  />
+
+  <Text style={styles.addCartText}>
+    Cart
+  </Text>      
                   </Pressable>
                 </View>
               </Pressable>
@@ -328,56 +335,90 @@ export default function HomeScreen({ navigation }) {
 
           <Pressable
             style={styles.seeMoreButton}
-            onPress={() => goTo("BestDeals")}
+            onPress={() => setShowMoreDeals(!showMoreDeals)}
           >
-            <Text style={styles.seeMoreText}>See More</Text>
+            <Text style={styles.seeMoreText}>{showMoreDeals ? "Show Less" : "See More"}</Text>
           </Pressable>
 
-          <Text style={styles.sectionTitle}>Categories</Text>
+          <Text style={[ styles.sectionTitle, { color: "#C86A9E" }]}>Categories</Text>
 
           <View style={styles.categoriesRow}>
             {categories.map((item) => (
               <Pressable
                 key={item.id}
                 style={styles.categoryItem}
-                onPress={() => goTo("Category", { category: item.title })}
+                onPress={() =>
+                  goTo("ExploreEquipment", {
+                    category: item.title,
+                  })
+                }
               >
                 <View style={styles.categoryIconCircle}>
                   {renderCategoryIcon(item)}
                 </View>
-                <Text style={styles.categoryLabel}>{item.title}</Text>
+                <Text style={[ styles.sectioncategory, { color: "#C86A9E" }]}>{item.name || item.title}</Text>
               </Pressable>
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>Explore Equipment</Text>
+          <Text style={[ styles.sectionTitle, { color: "#C86A9E" }]}>Explore Equipment</Text>
 
           <View style={styles.productsGrid}>
-            {exploreEquipment.map((item) => (
+            {exploreData.map((item) => (
               <Pressable
-                key={item.id}
-                style={styles.productCard}
+              key={item._id || item.id}
+              style={styles.productCard}
                 onPress={() => goTo("ProductDetails", { item })}
               >
-                <Pressable
-                  style={styles.heartButton}
-                  onPress={handleFavourite}
-                >
-                  <Ionicons name="heart-outline" size={15} color="#ff4fa3" />
+                  <Pressable
+                    style={styles.heartButton}
+                    onPress={() => handleFavourite(item.id)}
+                  >
+                  <Ionicons
+                    name={likedProducts.includes(item.id) ? "heart" : "heart-outline"}
+                    size={25}
+                    color="#ff4fa3"
+                 />
                 </Pressable>
 
-                <Image source={item.image} style={styles.productImage} />
+                <Image
+  source={
+    item.image
+      ? item.image
+      : {
+          uri: item.picture
+            ? item.picture.startsWith("http")
+              ? item.picture
+              : `https://eqply-backend.onrender.com/uploads/${item.picture}`
+            : "https://via.placeholder.com/150",
+        }
+  }
+  style={styles.productImage}
+/>
 
-                <Text style={styles.productTitle}>{item.title}</Text>
-                <Text style={styles.typeBadge}>{item.type}</Text>
+                <Text style={styles.nameText}>{item.name || item.title}</Text>
+                <Text style={styles.typeBadge}>{item.rentAvailable && item.buyAvailable
+                  ? "Rent / Buy"
+                  : item.rentAvailable
+                  ? "Rent"
+                  : "Buy"}</Text>
                 <View style={styles.productBottomRow}>
-                  <Text style={styles.productPrice}>{item.price}</Text>
-                  <Pressable onPress={() => goTo("ProductDetails", { item })}>
-                    <MaterialCommunityIcons
-                      name="storefront-outline"
-                      size={18}
-                      color={colors.deepPurple}
-                    />
+                  <Text style={styles.productPrice}>{item.buyPrice ||
+                    item.rentOptions?.[0]?.price ||
+                    "Price unavailable"} EGP</Text>
+                  <Pressable
+  style={styles.addCartButton}
+  onPress={() => handleAddToCart(item)}
+>
+  <Ionicons
+    name="add"
+    size={18}
+    color="#fff"
+  />
+
+  <Text style={styles.addCartText}>
+    Cart
+  </Text>      
                   </Pressable>
                 </View>
               </Pressable>
@@ -386,10 +427,107 @@ export default function HomeScreen({ navigation }) {
 
           <Pressable
             style={styles.seeMoreButton}
-            onPress={() => goTo("ExploreEquipment")}
-          >
+            onPress={() => goTo("ExploreEquipment")}>
             <Text style={styles.seeMoreText}>See More</Text>
           </Pressable>
+          </>
+        )}
+        {appMode === "buy" && (<>
+          <Text style={[ styles.sectionTitle, { color: "#C86A9E" }]}>User Reviews</Text>
+  <ScrollView
+  ref={reviewScrollRef}
+  horizontal
+  pagingEnabled
+  showsHorizontalScrollIndicator={false}
+  onMomentumScrollEnd={handleReviewScroll}
+  contentContainerStyle={styles.reviewsScrollContent}
+>
+{reviews.map((review) => (
+<Pressable
+key={review.id}
+style={styles.reviewCard}
+onPress={() => goTo("Reviews")}
+>
+<Image source={review.image} style={styles.reviewAvatar} />
+
+<View style={styles.reviewTextBox}>
+  <Text style={styles.reviewName}>{review.name}</Text>
+
+  <Text style={styles.reviewDesc}>{review.text}</Text>
+
+  <View style={styles.starsRow}>
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Ionicons
+        key={star}
+        name="star"
+        size={16}
+        color={star <= review.rating ? "#E2A93B" : "#ddd"}
+      />
+    ))}
+  </View>
+</View>
+</Pressable>
+))}
+</ScrollView>
+</>)}
+
+<View style={styles.dotsRow}>
+{reviews.map((_, index) => (
+<View
+key={index}
+style={[styles.dot, activeReview === index && styles.activeDot]}
+/>
+))}
+</View>
+  {appMode === "sell" && (
+  <>
+    <Text style={styles.nameText}>Seller Dashboard</Text>
+
+    <View style={styles.sellerButtonsContainer}>
+      <Pressable
+        style={styles.sellerButton}
+        onPress={() => goTo("AddProduct")}
+      >
+        <Ionicons
+          name="add-circle-outline"
+          size={26}
+          color="#fff"
+        />
+
+        <Text style={styles.sellerButtonText}>
+          Add Product
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={styles.sellerButton}
+        onPress={() => goTo("PublishedAds")}
+      >
+        <Ionicons
+          name="albums-outline"
+          size={26}
+          color="#fff"
+        />
+
+        <Text style={styles.sellerButtonText}>
+          Published Ads
+        </Text>
+      </Pressable>
+    </View>
+
+    <View style={styles.sellerInfoCard}>
+    <Text style={styles.nameText}>
+        Sell your equipment easily
+      </Text>
+
+      <Text style={styles.sellerInfoText}>
+        Upload products, manage ads, and reach students
+        looking to rent or buy equipment.
+      </Text>
+    </View>
+  </>
+ )}
+          
         </ScrollView>
         </LinearGradient>
     </SafeAreaView>
@@ -445,9 +583,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   iconButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
@@ -657,7 +795,7 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: "#f1e7ed",
+    backgroundColor: "#fffbfb",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
@@ -696,4 +834,85 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 6,
   },
+  sellerButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 18,
+  },
+  
+  sellerButton: {
+    width: "48%",
+    backgroundColor: "#ff2d98",
+    borderRadius: 18,
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  
+  sellerButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    marginTop: 8,
+    fontSize: 15,
+  },
+  
+  sellerInfoCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#eadbe0",
+  },
+  
+  sellerInfoTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.deepPurple,
+    marginBottom: 8,
+  },
+  
+  sellerInfoText: {
+    color: "#777",
+    lineHeight: 21,
+  },
+  cartBadge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.deepPurple,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  
+  cartBadgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  sectioncategory: {
+    fontSize: 13,
+    fontWeight: "650",
+    color: colors.deepPurple,
+    marginBottom: 10,
+    marginTop: 6,
+  },
+  addCartButton:{
+    flexDirection:"row",
+    alignItems:"center",
+    justifyContent:"center",
+    backgroundColor:"#20B15A",
+    paddingHorizontal:10,
+    paddingVertical:6,
+    borderRadius:12,
+    },
+    
+    addCartText:{
+    color:"#fff",
+    fontSize:12,
+    fontWeight:"700",
+    marginLeft:3,
+    },
 });
