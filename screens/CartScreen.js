@@ -147,14 +147,14 @@ darkMode
             {cartItems.map((item) => (
               <View key={item.productId?._id || item._id || item.id} style={styles.cartCard}>
                 <Image
-                   source={{
-                   uri:
-                   item.productId?.imageUrl ||
-                   item.imageUrl ||
-                   "https://via.placeholder.com/150",
-                   }}
-                  style={styles.itemImage}
-               />
+  source={{
+    uri:
+      item.productId?.picture ||
+      item.picture ||
+      "https://via.placeholder.com/150",
+  }}
+  style={styles.itemImage}
+/>
 
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemTitle}>{item.productId?.name || item.title}</Text>

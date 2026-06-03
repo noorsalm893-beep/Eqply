@@ -99,7 +99,10 @@ export default function BestDealsScreen({ navigation }) {
                 <Ionicons name="heart-outline" size={16} color="#ff4fa3" />
               </Pressable>
 
-              <Image source={item.image} style={styles.productImage} />
+              <Image
+  source={{ uri: item.picture }}
+  style={styles.productImage}
+/>
 
               <Text style={styles.productTitle}>{item.title}</Text>
               <Text style={styles.typeBadge}>{item.type}</Text>

@@ -35,6 +35,7 @@ const AUTH_ENDPOINTS = {
   orders: "/orders",
   orderStatus: "/orders/status",
   orderStatusCounts: "/orders/status-counts",
+  paymentUpload: "/payments/upload-proof",
 };
 
 const TOKEN_KEY = "eqply_user_token";
@@ -630,6 +631,49 @@ return { ok: true, products };
       setCartCount(0);
     }
   };
+  const uploadPaymentProof = async (payload) => {
+    try {
+      const data = await apiRequest(
+        AUTH_ENDPOINTS.paymentUpload,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify(payload),
+        }
+      );
+  
+      return {
+        ok: true,
+        payment: data,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  };
+  const getOrders = async () => {
+    try {
+      const data = await apiRequest(
+        AUTH_ENDPOINTS.orders,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
+        }
+      );
+  
+      return {
+        ok: true,
+        orders: data,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: error.message,
+      };
+    }
+  };
 
   const value = {
     userToken,
@@ -667,6 +711,8 @@ return { ok: true, products };
     refreshCartCount,
     darkMode,
     setDarkMode,
+    uploadPaymentProof,
+    getOrders,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

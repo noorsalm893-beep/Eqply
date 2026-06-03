@@ -43,9 +43,8 @@ const initialFavorites = [
 export default function FavoritesScreen({ navigation }) {
   const [favorites, setFavorites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { darkMode } = useAuth();
-
   const {
+    darkMode,
     getFavorites,
     toggleFavorite,
     cartCount,
@@ -172,17 +171,35 @@ darkMode
                   <Ionicons name="heart" size={17} color="#ff2d98" />
                 </Pressable>
 
-                <Image source={ item.image ? item.image : { uri: item.imageUrl || "https://via.placeholder.com/150",  
-                }}
-                style={styles.productImage}
-                />
+                <Image
+  source={{
+    uri:
+      item.picture ||
+      "https://via.placeholder.com/150",
+  }}
+  style={styles.productImage}
+/>
 
-                <Text style={styles.productTitle}>{item.title}</Text>
-                <Text style={styles.typeBadge}>{item.type}</Text>
-                <Text style={styles.productMeta}>{item.category}</Text>
+<Text style={styles.productTitle}>
+  {item.name || item.title}
+</Text>
+
+<Text style={styles.typeBadge}>
+  {item.rentAvailable && item.buyAvailable
+    ? "Rent / Buy"
+    : item.rentAvailable
+    ? "Rent"
+    : "Buy"}
+</Text>
+
+<Text style={styles.productMeta}>
+  {item.category || "General"}
+</Text>
 
                 <View style={styles.productBottomRow}>
-                  <Text style={styles.productPrice}>{item.price}</Text>
+                <Text style={styles.productPrice}>
+  {item.buyPrice || item.rentOptions?.[0]?.price || "Price unavailable"} EGP
+</Text>
                   <MaterialCommunityIcons
                     name="storefront-outline"
                     size={18}

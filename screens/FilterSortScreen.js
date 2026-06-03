@@ -22,9 +22,12 @@ export default function FilterSortScreen({ navigation }) {
   const [selectedSort, setSelectedSort] = useState("Newest");
   const { darkMode } = useAuth();
 
-  const handleApply = () => {
-    Alert.alert("Filters Applied", "Your selected filters have been applied.");
-    navigation.goBack();
+  const applyFilters = () => {
+    navigation.navigate("ExploreEquipment", {
+      category: selectedCategory,
+      type: selectedType,
+      sort: selectedSort,
+    });
   };
 
   const handleReset = () => {
@@ -139,7 +142,7 @@ darkMode
             <Text style={styles.resetText}>Reset</Text>
           </Pressable>
 
-          <Pressable style={styles.applyButton} onPress={handleApply}>
+          <Pressable onPress={applyFilters}>
             <Text style={styles.applyText}>Apply</Text>
           </Pressable>
         </View>

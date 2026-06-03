@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -11,36 +11,85 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
+import { io } from "socket.io-client";
 
 export default function ChatScreen({ navigation, route }) {
   const chat = route?.params?.chat;
   const [message, setMessage] = useState("");
-  const { darkMode } = useAuth();
+  const socketRef = useRef(null);
+  const { darkMode, userToken } = useAuth();
 
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello, is this product available?", sender: "me" },
-    { id: 2, text: "Yes, it is available.", sender: "other" },
   ]);
-
+  const socket = io(
+    "https://eqply-backend.onrender.com/chat",
+    {
+      auth:{
+         token:userToken
+      }
+    }
+   );
+   useEffect(() => {
+    if (!userToken) return;
+  
+    socketRef.current = io("https://eqply-backend.onrender.com/chat", {
+      auth: {
+        token: userToken,
+      },
+      transports: ["websocket"],
+    });
+  
+    socketRef.current.on("connect", () => {
+      console.log("Socket connected");
+    });
+  
+    socketRef.current.on("receiveMessage", (data) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          text: data.message,
+          sender: "other",
+        },
+      ]);
+    });
+  
+    socketRef.current.on("connect_error", (error) => {
+      console.log("Socket error:", error.message);
+    });
+  
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [userToken]);
   const sendMessage = () => {
     if (!message.trim()) return;
-
-    setMessages((prev) => [
-      ...prev,
-      { id: Date.now(), text: message, sender: "me" },
-    ]);
-
+  
+    const newMessage = {
+      id: Date.now(),
+      text: message,
+      sender: "me",
+    };
+  
+    setMessages((prev) => [...prev, newMessage]);
+  
+    socketRef.current?.emit("sendMessage", {
+      toUserId: chat?.ownerId || chat?.vendorId || chat?.toUserId,
+      message,
+    });
+  
     setMessage("");
   };
 
   return (
     <LinearGradient
-colors={
-darkMode
-? ["#1A1625","#2A2338"]
-: ["#d9c6e6","#f8f1f3"]
-}
->
+      colors={
+        darkMode
+          ? ["#1A1625", "#2A2338"]
+          : ["#d9c6e6", "#f8f1f3"]
+      }
+      style={styles.screen}
+    >
       <View style={styles.container}>
         <View style={styles.header}>
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>

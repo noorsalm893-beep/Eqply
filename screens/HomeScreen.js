@@ -290,17 +290,11 @@ Hello, {displayName}
                 </Pressable>
 
                 <Image
-  source={
-    item.image
-      ? item.image
-      : {
-          uri: item.picture
-            ? item.picture.startsWith("http")
-              ? item.picture
-              : `https://eqply-backend.onrender.com/uploads/${item.picture}`
-            : "https://via.placeholder.com/150",
-        }
-  }
+  source={{
+    uri:
+      item.picture ||
+      "https://via.placeholder.com/150",
+  }}
   style={styles.productImage}
 />
 
@@ -382,17 +376,11 @@ Hello, {displayName}
                 </Pressable>
 
                 <Image
-  source={
-    item.image
-      ? item.image
-      : {
-          uri: item.picture
-            ? item.picture.startsWith("http")
-              ? item.picture
-              : `https://eqply-backend.onrender.com/uploads/${item.picture}`
-            : "https://via.placeholder.com/150",
-        }
-  }
+  source={{
+    uri:
+      item.picture ||
+      "https://via.placeholder.com/150",
+  }}
   style={styles.productImage}
 />
 

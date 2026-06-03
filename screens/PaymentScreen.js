@@ -70,8 +70,7 @@ colors={
 darkMode
 ? ["#1A1625","#2A2338"]
 : ["#d9c6e6","#f8f1f3"]
-}
->
+}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>

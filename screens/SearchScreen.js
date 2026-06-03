@@ -143,7 +143,10 @@ darkMode
                 })
               }
             >
-              <Image source={getProductImage(item)} style={styles.productImage} />
+              <Image
+  source={{ uri: item.picture }}
+  style={styles.productImage}
+/>
           
               <View style={styles.cardContent}>
                 <Text style={styles.title}>

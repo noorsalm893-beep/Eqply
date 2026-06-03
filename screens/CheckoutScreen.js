@@ -85,9 +85,11 @@ darkMode
           </Text>
 
           <Image
-            source={getProductImage()}
-            style={styles.productImage}
-          />
+  source={{
+    uri: product?.picture || "https://via.placeholder.com/150",
+  }}
+  style={styles.productImage}
+/>
 
           <Text style={styles.productName}>
             {product?.name || "Product"}

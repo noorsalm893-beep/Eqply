@@ -29,7 +29,7 @@ export default function AddProductScreen({ navigation }) {
   const { user } = useAuth();
   const [productImage, setProductImage] = useState(null);
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
+  const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
@@ -50,7 +50,7 @@ export default function AddProductScreen({ navigation }) {
   }, []);
   
   const loadUploadedCount = async () => {
-    const response = await getMyProducts();
+  const response = await getMyProducts();
   
     if (response.ok) {
       setUploadedCount(
@@ -108,22 +108,39 @@ export default function AddProductScreen({ navigation }) {
       setIsUploading(true);
   
       const payload = {
-        name: title,
-        category,
-        location,
-        description,
-        type: listingType,
-        rentPrice:
+        picture: productImage
+          ? productImage.split("/").pop()
+          : "placeholder.jpg",
+      
+        name: title.trim(),
+        description: description.trim(),
+      
+        category: category.toLowerCase(),
+      
+        rentAvailable:
+          listingType === "Rent" ||
+          listingType === "Rent / Buy",
+      
+        buyAvailable:
+          listingType === "Buy" ||
+          listingType === "Rent / Buy",
+      
+        rentOptions:
           listingType === "Rent" ||
           listingType === "Rent / Buy"
-            ? rentPrice
-            : undefined,
+            ? [
+                {
+                  duration: "1 day",
+                  price: Number(rentPrice),
+                },
+              ]
+            : [],
+      
         buyPrice:
           listingType === "Buy" ||
           listingType === "Rent / Buy"
-            ? buyPrice
+            ? Number(buyPrice)
             : undefined,
-        imageUrl: "https://via.placeholder.com/300",
       };
   
       const response = await uploadProduct(payload);
@@ -151,13 +168,12 @@ export default function AddProductScreen({ navigation }) {
 
   return (
     <LinearGradient
-colors={
-darkMode
-? ["#1A1625","#2A2338"]
-: ["#d9c6e6","#f8f1f3"]
-}
-style={styles.screen}
->
+      colors={
+      darkMode
+      ? ["#1A1625","#2A2338"]
+      : ["#d9c6e6","#f8f1f3"]
+     }
+    style={styles.screen}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.contentContainer}
@@ -175,18 +191,18 @@ style={styles.screen}
 
 
         <Pressable style={styles.imageBox} onPress={pickImage}>
-  {productImage ? (
-    <Image
-      source={{ uri: productImage }}
-      style={styles.previewImage}
-    />
-  ) : (
-    <>
-      <Ionicons name="image-outline" size={46} color={colors.deepPurple} />
-      <Text style={styles.imageText}>Add product image</Text>
-      <Text style={styles.imageHint}>Tap to choose from gallery</Text>
-    </>
-  )}
+        {productImage ? (
+  <Image
+    source={{ uri: productImage }}
+    style={styles.previewImage}
+  />
+) : (
+  <>
+    <Ionicons name="image-outline" size={46} color={colors.deepPurple} />
+    <Text style={styles.imageText}>Add product image</Text>
+    <Text style={styles.imageHint}>Tap to choose from gallery</Text>
+  </>
+)}
 </Pressable>
 
 

@@ -111,9 +111,14 @@ darkMode
         ) : (
           ads.map((item) => (
             <View key={item._id || item.id} style={styles.adCard}>
-              <Image source={item.image? item.image: {uri: item.imageUrl || "https://via.placeholder.com/150",}}
-              style={styles.adImage}
-            />
+              <Image
+  source={{
+    uri:
+      item.picture ||
+      "https://via.placeholder.com/150",
+  }}
+  style={styles.productImage}
+/>
               <View style={styles.adInfo}>
                 <Text style={styles.adTitle}>{item.name || item.title}</Text>
                 <Text style={styles.typeBadge}>{item.type}</Text>

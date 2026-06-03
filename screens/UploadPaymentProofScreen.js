@@ -15,8 +15,9 @@ import { colors } from "../constants/colors";
 import { useAuth } from "../context/AuthContext";
 
 export default function UploadPaymentProofScreen({ navigation, route }) {
-  const { darkMode } = useAuth();
+  const { darkMode, uploadPaymentProof } = useAuth();
   const [proofImage, setProofImage] = useState(null);
+  const [imageBase64, setImageBase64] = useState("");
 
   const total = route?.params?.total;
   const phoneNumber = route?.params?.phoneNumber;
@@ -25,18 +26,50 @@ export default function UploadPaymentProofScreen({ navigation, route }) {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
+      base64: true,
     });
 
     if (!result.canceled) {
       setProofImage(result.assets[0].uri);
+      setImageBase64(`data:image/jpeg;base64,${result.assets[0].base64}`);
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!proofImage) {
-      Alert.alert("Missing screenshot", "Please upload your payment screenshot first.");
+      Alert.alert(
+        "Missing screenshot",
+        "Please upload your payment screenshot first."
+      );
       return;
     }
+
+    // ✅ Call uploadPaymentProof only ONCE
+    const uploadResponse = await uploadPaymentProof({
+      imageBase64,
+      phoneNumber,
+      amountPaid: total,
+      paymentMethod: "Wallet",
+    });
+
+    if (!uploadResponse.ok) {
+      Alert.alert(
+        "Upload Error",
+        uploadResponse.error || "Failed to upload payment proof."
+      );
+      return;
+    }
+
+    Alert.alert("Success", "Payment proof uploaded successfully!", [
+      {
+        text: "OK",
+        onPress: () =>
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Home" }],
+          }),
+      },
+    ]);
 
     navigation.navigate("OrderSuccess", {
       orderId: "EQP1024",

@@ -26,9 +26,28 @@ export default function ExploreEquipmentScreen({
     Alert.alert("Favourites", "Added to favourites.");
   };
   const selectedCategory = route?.params?.category;
-  const { getProducts, darkMode } = useAuth();
+  const {
+    getProducts,
+    addToCart,
+    darkMode,
+  } = useAuth();
 
   const [equipment, setEquipment] = useState([]);
+  const handleAddToCart = async (item) => {
+    const response = await addToCart(item);
+  
+    if (response?.ok) {
+      Alert.alert(
+        "Success",
+        "Added to cart."
+      );
+    } else {
+      Alert.alert(
+        "Error",
+        response?.error || "Failed to add."
+      );
+    }
+  };
   useEffect(() => {
     const loadProducts = async () => {
       const response = await getProducts();
@@ -37,7 +56,8 @@ export default function ExploreEquipmentScreen({
         setEquipment(response.products || []);
       }
     };
-  
+
+    
     loadProducts();
   }, []);
 
@@ -83,13 +103,28 @@ darkMode
         </View>
 
         <View style={styles.productsGrid}>
-          {equipment
-          .filter((item) => 
-          selectedCategory 
-          ? item.category?.toLowerCase() ===
-          selectedCategory?.toLowerCase() 
-          : true )
-          .map((item) => (
+        {equipment
+          .filter((item) => {
+            const categoryMatch =
+            !selectedCategory ||
+            selectedCategory === "All" ||
+            item.category?.toLowerCase() ===
+            selectedCategory.toLowerCase();
+
+            const typeMatch =
+            !route?.params?.type ||
+            route.params.type === "All" ||
+            (route.params.type === "Rent" &&
+              item.rentAvailable) ||
+            (route.params.type === "Buy" &&
+              item.buyAvailable) ||
+            (route.params.type === "Rent / Buy" &&
+              item.rentAvailable &&
+              item.buyAvailable);
+
+           return categoryMatch && typeMatch;
+         })
+         .map((item) => (
             <Pressable
               key={item._id || item.id}
               style={styles.productCard}
@@ -99,8 +134,14 @@ darkMode
                 <Ionicons name="heart-outline" size={16} color="#ff4fa3" />
               </Pressable>
 
-              <Image source={ item.image? item.image: { uri: item.picture?.startsWith("http") ? item.picture: 
-              `https://eqply-backend.onrender.com/uploads/${item.picture}`}} style={styles.productImage}/>
+              <Image
+  source={{
+    uri:
+      item.picture ||
+      "https://via.placeholder.com/150",
+  }}
+  style={styles.productImage}
+/>
 
               <Text style={styles.productTitle}>{item.name || item.title}</Text>
               <Text style={styles.typeBadge}>{item.rentAvailable && item.buyAvailable? "Rent / Buy": 
